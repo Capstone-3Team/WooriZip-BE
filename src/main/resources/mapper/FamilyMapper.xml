@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.scoula.backend.domain.Family.mapper.FamilyMapper">
+
+    <insert id="insertFamily" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO family (name, invite_code, created_at)
+        VALUES (#{name}, #{inviteCode}, NOW());
+    </insert>
+
+    <select id="findByInviteCode" resultType="org.scoula.backend.domain.Family.domain.Family">
+        SELECT * FROM family WHERE invite_code = #{inviteCode}
+    </select>
+
+    <update id="updateLeaderMemberId">
+        UPDATE family
+        SET leader_member_id = #{leaderId}
+        WHERE id = #{familyId}
+    </update>
+
+</mapper>
