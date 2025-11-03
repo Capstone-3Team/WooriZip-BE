@@ -49,4 +49,7 @@ public class FamilyMember {
 	public enum Gender {
 		M, F
 	}
+	@Column(nullable = false)
+	private String password; // 🔹 비밀번호 (회원가입 시 해시 처리)
+
 }

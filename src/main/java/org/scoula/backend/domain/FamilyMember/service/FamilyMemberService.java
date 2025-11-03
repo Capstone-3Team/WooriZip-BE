@@ -6,6 +6,7 @@ import org.scoula.backend.domain.Family.repository.FamilyRepository;
 import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.dto.MemberRegisterRequest;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ public class FamilyMemberService {
 
 	private final FamilyRepository familyRepository;
 	private final FamilyMemberRepository familyMemberRepository;
+	private final BCryptPasswordEncoder passwordEncoder;
 
 	@Transactional
 	public String registerMember(MemberRegisterRequest request) {
@@ -46,6 +48,7 @@ public class FamilyMemberService {
 				.birth(LocalDate.parse(request.getBirth()))
 				.phone(request.getPhone())
 				.profileImage(request.getProfileImage())
+				.password(passwordEncoder.encode(request.getPassword()))
 				.isLeader(true)
 				.build();
 
@@ -74,6 +77,7 @@ public class FamilyMemberService {
 				.birth(LocalDate.parse(request.getBirth()))
 				.phone(request.getPhone())
 				.profileImage(request.getProfileImage())
+				.password(passwordEncoder.encode(request.getPassword()))
 				.isLeader(false)
 				.build();
 

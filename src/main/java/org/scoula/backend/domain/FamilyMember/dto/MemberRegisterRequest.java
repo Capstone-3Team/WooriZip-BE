@@ -14,4 +14,6 @@ public class MemberRegisterRequest {
 	private String birth;
 	private String phone;
 	private String profileImage; // 선택사항
+	private String password;
+
 }
