@@ -13,7 +13,7 @@ public class SecurityConfig {
 		http
 			.csrf(csrf -> csrf.disable()) // Postman 테스트용 CSRF 비활성화
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/members/register").permitAll() // ✅ 회원가입은 허용
+				.requestMatchers("/api/member/register").permitAll() // ✅ 회원가입은 허용
 				.anyRequest().authenticated() // 그 외 요청은 인증 필요
 			)
 			.httpBasic(httpBasic -> httpBasic.disable()) // REST API는 기본 로그인 비활성화

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -20,42 +21,65 @@ public class FamilyMemberService {
 	private final FamilyMemberRepository familyMemberRepository;
 
 	@Transactional
-	public void register(MemberRegisterRequest request) {
+	public String registerMember(MemberRegisterRequest request) {
 		Family family;
 
-		// 초대 코드가 없는 경우: 새 가족 생성
+		// ✅ 1️⃣ 가족코드 있는지 확인
 		if (request.getInviteCode() == null || request.getInviteCode().isEmpty()) {
+			// 🔹 가족코드 없음 → 새 가족 생성
+			String inviteCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
 			family = Family.builder()
 				.name(request.getFamilyName())
-				.inviteCode(UUID.randomUUID().toString())
+				.inviteCode(inviteCode)
+				.createdAt(java.time.LocalDateTime.now())
 				.build();
+
 			familyRepository.save(family);
+
+			// 🔹 대표 가족 구성원 생성
+			FamilyMember leader = FamilyMember.builder()
+				.familyId(family.getId())
+				.email(request.getEmail())
+				.nickname(request.getNickname())
+				.gender(FamilyMember.Gender.valueOf(request.getGender().toUpperCase()))
+				.birth(LocalDate.parse(request.getBirth()))
+				.phone(request.getPhone())
+				.profileImage(request.getProfileImage())
+				.isLeader(true)
+				.build();
+
+			familyMemberRepository.save(leader);
+
+			// 🔹 리더 ID를 Family 테이블에 반영
+			family.setLeaderMemberId(leader.getId());
+			familyRepository.save(family);
+
+			return inviteCode;
+
 		} else {
-			family = familyRepository.findByInviteCode(request.getInviteCode())
-				.orElseThrow(() -> new IllegalArgumentException("유효하지 않은 가족 코드입니다."));
+			// ✅ 2️⃣ 가족코드 있음 → 기존 가족 참여
+			Optional<Family> optionalFamily = familyRepository.findByInviteCode(request.getInviteCode());
+			if (optionalFamily.isEmpty()) {
+				throw new IllegalArgumentException("유효하지 않은 가족코드입니다.");
+			}
+
+			family = optionalFamily.get();
+
+			FamilyMember newMember = FamilyMember.builder()
+				.familyId(family.getId())
+				.email(request.getEmail())
+				.nickname(request.getNickname())
+				.gender(FamilyMember.Gender.valueOf(request.getGender().toUpperCase()))
+				.birth(LocalDate.parse(request.getBirth()))
+				.phone(request.getPhone())
+				.profileImage(request.getProfileImage())
+				.isLeader(false)
+				.build();
+
+			familyMemberRepository.save(newMember);
+
+			return family.getInviteCode();
 		}
-
-		// 가족 구성원 생성
-		FamilyMember member = FamilyMember.builder()
-			.familyId(family.getId())
-			.email(request.getEmail())
-			.nickname(request.getNickname())
-			.gender(FamilyMember.Gender.valueOf(request.getGender().toUpperCase()))
-			.birth(LocalDate.parse(request.getBirth()))
-			.phone(request.getPhone())
-			.profileImage(request.getProfileImage())
-			.isLeader(false)
-			.build();
-
-		familyMemberRepository.save(member);
-
-		// 새 가족일 경우, 리더 설정
-		if (request.getInviteCode() == null || request.getInviteCode().isEmpty()) {
-			family.setLeaderMemberId(member.getId());
-			member.setIsLeader(true);
-		}
-
-		familyRepository.save(family);
-		familyMemberRepository.save(member);
 	}
 }

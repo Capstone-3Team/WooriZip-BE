@@ -7,16 +7,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/members")
+@RequestMapping("/api/member")
 @RequiredArgsConstructor
 public class FamilyMemberController {
 
 	private final FamilyMemberService familyMemberService;
 
 	@PostMapping("/register")
-	public ResponseEntity<String> register(@RequestBody MemberRegisterRequest request) {
-		familyMemberService.register(request);
-		return ResponseEntity.ok("회원가입 완료!");
+	public ResponseEntity<?> register(@RequestBody MemberRegisterRequest request) {
+		String inviteCode = familyMemberService.registerMember(request);
+		return ResponseEntity.ok("회원가입 성공! 가족 코드: " + inviteCode);
 	}
 }
-
