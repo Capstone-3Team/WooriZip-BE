@@ -3,18 +3,21 @@ package org.scoula.backend.global.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 			.csrf(csrf -> csrf.disable()) // Postman 테스트용 CSRF 비활성화
+			.cors(cors -> cors.disable())
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/member/register","/api/auth/login").permitAll() // ✅ 회원가입은 허용
+				.requestMatchers("/api/member/register","/api/auth/login","/api/questions/**","/api/video-answers/**" ).permitAll() // ✅ 회원가입은 허용
 				.anyRequest().authenticated() // 그 외 요청은 인증 필요
 			)
 			.httpBasic(httpBasic -> httpBasic.disable()) // REST API는 기본 로그인 비활성화
