@@ -22,18 +22,18 @@ public class QuestionService {
 	private final QuestionRepository questionRepository;
 
 	public Question getCurrentWeekQuestionByEmail(String email) {
-		// ✅ 로그인한 유저 → 가족 찾기
+		// 로그인한 유저 → 가족 찾기
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
 		Family family = familyRepository.findById(member.getFamilyId())
 			.orElseThrow(() -> new IllegalArgumentException("가족을 찾을 수 없습니다."));
 
-		// ✅ 가족 생성일 기준으로 현재 주차 계산
+		// 가족 생성일 기준으로 현재 주차 계산
 		LocalDate startDate = family.getCreatedAt().toLocalDate();
 		long weeks = ChronoUnit.WEEKS.between(startDate, LocalDate.now()) + 1;
 
-		// ✅ 해당 주차의 질문 반환
+		// 해당 주차의 질문 반환
 		return questionRepository.findByWeekNumber((int) weeks)
 			.orElseThrow(() -> new IllegalArgumentException(weeks + "주차 질문이 존재하지 않습니다."));
 	}
