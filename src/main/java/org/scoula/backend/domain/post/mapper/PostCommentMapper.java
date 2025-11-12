@@ -10,6 +10,7 @@ import java.util.List;
 @Mapper
 public interface PostCommentMapper {
 	void insertComment(PostComment comment);
-	List<PostComment> findCommentsByPostId(Long postId);
-	void deleteComment(@Param("id") Long id, @Param("familyMemberId") Long familyMemberId);
+	List<PostComment> findCommentsByPostId(@Param("postId") Long postId);
+	List<PostComment> findAllComments();
+	int deleteComment(@Param("id") Long id, @Param("familyMemberId") Long familyMemberId);
 }
