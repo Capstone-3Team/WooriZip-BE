@@ -44,6 +44,18 @@ public class PostCommentController {
 		return ResponseEntity.ok(comments);
 	}
 
+	// ✅ 댓글 수정
+	@PutMapping("/{commentId}")
+	public ResponseEntity<String> updateComment(
+		@PathVariable Long commentId,
+		@RequestParam String content,
+		@AuthenticationPrincipal User user
+	) {
+		String email = user.getUsername();
+		postCommentService.updateComment(commentId, email, content);
+		return ResponseEntity.ok("댓글 수정 완료");
+	}
+
 	// ✅ 댓글 삭제
 	@DeleteMapping("/{commentId}")
 	public ResponseEntity<String> deleteComment(

@@ -42,6 +42,17 @@ public class PostCommentService {
 		return postCommentMapper.findAllComments();
 	}
 
+	// ✅ 댓글 수정
+	public void updateComment(Long commentId, String email, String content) {
+		FamilyMember member = familyMemberRepository.findByEmail(email)
+			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+		int updated = postCommentMapper.updateComment(commentId, member.getId(), content);
+		if (updated == 0) {
+			throw new IllegalStateException("수정할 댓글이 존재하지 않거나 권한이 없습니다.");
+		}
+	}
+
 	// ✅ 댓글 삭제 (본인만 가능)
 	public void deleteCommentByEmail(Long commentId, String email) {
 		FamilyMember member = familyMemberRepository.findByEmail(email)

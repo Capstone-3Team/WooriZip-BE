@@ -12,5 +12,10 @@ public interface PostCommentMapper {
 	void insertComment(PostComment comment);
 	List<PostComment> findCommentsByPostId(@Param("postId") Long postId);
 	List<PostComment> findAllComments();
+	int updateComment(
+		@Param("id") Long id,
+		@Param("familyMemberId") Long familyMemberId,
+		@Param("content") String content
+	);
 	int deleteComment(@Param("id") Long id, @Param("familyMemberId") Long familyMemberId);
 }

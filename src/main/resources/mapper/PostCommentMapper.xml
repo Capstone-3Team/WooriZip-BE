@@ -23,6 +23,14 @@
         ORDER BY created_at DESC
     </select>
 
+    <!-- ✅ 댓글 수정 -->
+    <update id="updateComment">
+        UPDATE post_comment
+        SET content = #{content}
+        WHERE id = #{id}
+          AND family_member_id = #{familyMemberId}
+    </update>
+
     <!-- ✅ 댓글 삭제 -->
     <delete id="deleteComment">
         DELETE FROM post_comment
