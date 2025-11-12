@@ -25,7 +25,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/api/member/register", "/api/auth/login").permitAll()
 				// 질문, 영상 답변은 로그인 필요
-				.requestMatchers("/api/questions/**", "/api/video-answers/**").authenticated()
+				.requestMatchers("/api/questions/**", "/api/video-answers/**","/api/posts/**").authenticated()
 				.anyRequest().authenticated() // 그 외 요청은 인증 필요
 			)
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

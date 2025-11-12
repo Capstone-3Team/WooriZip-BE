@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.scoula.backend.domain.post.mapper.PostCommentMapper">
+
+<!-- 댓글 등록 -->
+    <insert id="insertComment">
+        INSERT INTO post_comment (post_id, family_member_id, content, created_at)
+        VALUES (#{postId}, #{familyMemberId}, #{content}, NOW())
+    </insert>
+
+    <!-- 게시글별 댓글 조회 -->
+    <select id="findCommentsByPostId" resultType="org.scoula.backend.domain.post.domain.PostComment">
+        SELECT * FROM post_comment WHERE post_id = #{postId} ORDER BY created_at ASC
+    </select>
+
+    <!-- 댓글 삭제 -->
+    <delete id="deleteComment">
+        DELETE FROM post_comment WHERE id = #{id} AND family_member_id = #{familyMemberId}
+    </delete>
+
+</mapper>

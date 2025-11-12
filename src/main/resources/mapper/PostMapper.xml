@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.scoula.backend.domain.post.mapper.PostMapper">
+
+    <!-- ✅ 게시글 등록 -->
+    <insert id="insertPost" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO post (family_member_id, family_id, media_url, thumbnail_url, description, created_at)
+        VALUES (#{familyMemberId}, #{familyId}, #{mediaUrl}, #{thumbnailUrl}, #{description}, NOW())
+    </insert>
+
+    <!-- ✅ 가족별 게시글 조회 -->
+    <select id="findAllPostsByFamilyId" resultMap="PostResultMap">
+        SELECT * FROM post WHERE family_id = #{familyId} ORDER BY created_at DESC
+    </select>
+
+
+    <!-- ✅ 게시글 삭제 -->
+    <delete id="deletePost">
+        DELETE FROM post
+        WHERE id = #{id}
+          AND family_member_id = #{familyMemberId}
+    </delete>
+
+    <!-- ✅ 컬럼 ↔ 필드 매핑 -->
+    <resultMap id="PostResultMap" type="org.scoula.backend.domain.post.domain.Post">
+        <id property="id" column="id"/>
+        <result property="familyMemberId" column="family_member_id"/>
+        <result property="familyId" column="family_id"/>
+        <result property="mediaUrl" column="media_url"/>
+        <result property="thumbnailUrl" column="thumbnail_url"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+</mapper>
