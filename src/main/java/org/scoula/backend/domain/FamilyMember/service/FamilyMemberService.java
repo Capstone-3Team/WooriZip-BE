@@ -25,21 +25,17 @@ public class FamilyMemberService {
 	@Transactional
 	public String registerMember(MemberRegisterRequest request) {
 		Family family;
-
-		// ✅ 1️⃣ 가족코드 있는지 확인
+		// 1️⃣ 가족코드 있는지 확인
 		if (request.getInviteCode() == null || request.getInviteCode().isEmpty()) {
-			// 🔹 가족코드 없음 → 새 가족 생성
+			// 가족코드 없음 → 새 가족 생성
 			String inviteCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
 			family = Family.builder()
 				.name(request.getFamilyName())
 				.inviteCode(inviteCode)
 				.createdAt(java.time.LocalDateTime.now())
 				.build();
-
 			familyRepository.save(family);
-
-			// 🔹 대표 가족 구성원 생성
+			// 대표 가족 구성원 생성
 			FamilyMember leader = FamilyMember.builder()
 				.familyId(family.getId())
 				.email(request.getEmail())
@@ -51,17 +47,14 @@ public class FamilyMemberService {
 				.password(passwordEncoder.encode(request.getPassword()))
 				.isLeader(true)
 				.build();
-
 			familyMemberRepository.save(leader);
-
-			// 🔹 리더 ID를 Family 테이블에 반영
+			// 리더 ID를 Family 테이블에 반영
 			family.setLeaderMemberId(leader.getId());
 			familyRepository.save(family);
-
 			return inviteCode;
 
 		} else {
-			// ✅ 2️⃣ 가족코드 있음 → 기존 가족 참여
+			// 2️⃣ 가족코드 있음 → 기존 가족 참여
 			Optional<Family> optionalFamily = familyRepository.findByInviteCode(request.getInviteCode());
 			if (optionalFamily.isEmpty()) {
 				throw new IllegalArgumentException("유효하지 않은 가족코드입니다.");
