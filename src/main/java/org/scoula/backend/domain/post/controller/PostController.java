@@ -16,31 +16,25 @@ import java.util.List;
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
 public class PostController {
-
 	private final PostService postService;
-
-	// ✅ 게시글 등록
+	// 게시글 등록
 	@PostMapping("/create")
 	public ResponseEntity<String> createPost(
 		@RequestParam(required = false) MultipartFile file,
 		@RequestParam String description,
 		@AuthenticationPrincipal User user) {
-
 		String email = user.getUsername(); // JWT에서 이메일 추출
 		postService.createPostByEmail(email, file, description);
-
 		return ResponseEntity.ok("게시글 등록 완료");
 	}
-
-	// ✅ 전체 게시글 조회
+	// 전체 게시글 조회
 	@GetMapping
 	public ResponseEntity<List<Post>> getAllPosts(@AuthenticationPrincipal User user) {
 		String email = user.getUsername();
 		List<Post> posts = postService.getAllPostsByEmail(email);
 		return ResponseEntity.ok(posts);
 	}
-
-	// ✅ 게시글 삭제
+	// 게시글 삭제
 	@DeleteMapping("/{postId}")
 	public ResponseEntity<String> deletePost(@PathVariable Long postId,
 		@AuthenticationPrincipal User user) {
