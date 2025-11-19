@@ -17,26 +17,21 @@ import java.io.File;
 @Service
 @RequiredArgsConstructor
 public class VideoAnswerService {
-
 	private final VideoAnswerRepository videoAnswerRepository;
 	private final FamilyMemberRepository familyMemberRepository;
 	private final ThumbnailAIService thumbnailAIService;
-
-	// 🔹 업로드
+	// 업로드
 	@Transactional
 	public VideoAnswer createVideoAnswer(VideoAnswerRequest request, String email) {
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
-
-		// 🔵 [ADD] videoUrl → File 변환 (S3 도입 전 임시 방식)
+		//  videoUrl → File 변환 (S3 도입 전 임시 방식)
 		File videoFile = new File(request.getVideoUrl());
 		if (!videoFile.exists()) {
 			throw new IllegalArgumentException("비디오 파일을 찾을 수 없습니다: " + request.getVideoUrl());
 		}
-
-		// 🔵 [ADD] AI 서버 호출 → Base64 썸네일 받기
+		// AI 서버 호출 → Base64 썸네일 받기
 		String thumbnailBase64 = thumbnailAIService.getThumbnailBase64(videoFile);
-
 		VideoAnswer answer = VideoAnswer.builder()
 			.questionId(request.getQuestionId())
 			.familyMemberId(member.getId())
@@ -45,7 +40,6 @@ public class VideoAnswerService {
 			.thumbnailUrl(thumbnailBase64)
 			.createdAt(LocalDateTime.now())
 			.build();
-
 		return videoAnswerRepository.save(answer);
 	}
 
