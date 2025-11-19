@@ -6,11 +6,13 @@ import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswer;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerRequest;
 import org.scoula.backend.domain.VideoAnswer.repository.VideoAnswerRepository;
+import org.scoula.backend.global.ai.service.ThumbnailAIService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.io.File;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class VideoAnswerService {
 
 	private final VideoAnswerRepository videoAnswerRepository;
 	private final FamilyMemberRepository familyMemberRepository;
+	private final ThumbnailAIService thumbnailAIService;
 
 	// 🔹 업로드
 	@Transactional
@@ -25,12 +28,21 @@ public class VideoAnswerService {
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
+		// 🔵 [ADD] videoUrl → File 변환 (S3 도입 전 임시 방식)
+		File videoFile = new File(request.getVideoUrl());
+		if (!videoFile.exists()) {
+			throw new IllegalArgumentException("비디오 파일을 찾을 수 없습니다: " + request.getVideoUrl());
+		}
+
+		// 🔵 [ADD] AI 서버 호출 → Base64 썸네일 받기
+		String thumbnailBase64 = thumbnailAIService.getThumbnailBase64(videoFile);
+
 		VideoAnswer answer = VideoAnswer.builder()
 			.questionId(request.getQuestionId())
 			.familyMemberId(member.getId())
 			.familyId(member.getFamilyId().longValue())
 			.videoUrl(request.getVideoUrl())
-			.thumbnailUrl(request.getThumbnailUrl())
+			.thumbnailUrl(thumbnailBase64)
 			.createdAt(LocalDateTime.now())
 			.build();
 
