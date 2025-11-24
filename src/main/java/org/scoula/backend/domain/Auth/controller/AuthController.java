@@ -1,14 +1,14 @@
-package org.scoula.backend.domain.FamilyMember.controller;
+package org.scoula.backend.domain.Auth.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.scoula.backend.domain.FamilyMember.dto.LoginRequest;
-import org.scoula.backend.domain.FamilyMember.dto.LoginResponse;
-import org.scoula.backend.domain.FamilyMember.service.AuthService;
+import org.scoula.backend.domain.Auth.dto.LoginRequest;
+import org.scoula.backend.domain.Auth.dto.LoginResponse;
+import org.scoula.backend.domain.Auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
