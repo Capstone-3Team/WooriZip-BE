@@ -23,7 +23,9 @@ public class SecurityConfig {
 		http
 			.csrf(csrf -> csrf.disable()) // Postman 테스트용 CSRF 비활성화
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/member/register", "/auth/login","/auth/password/**" ).permitAll()
+				.requestMatchers("/member/register", "/auth/login","/auth/password/**" ,"/v3/api-docs/**",
+					"/swagger-ui/**",
+					"/swagger-ui.html").permitAll()
 				// 질문, 영상 답변은 로그인 필요
 				.requestMatchers("/api/questions/**", "/api/video-answers/**","/api/posts/**").authenticated()
 				.anyRequest().authenticated() // 그 외 요청은 인증 필요
