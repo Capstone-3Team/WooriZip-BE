@@ -1,9 +1,9 @@
-package org.scoula.backend.domain.FamilyMember.service;
+package org.scoula.backend.domain.Auth.service;
 
 import lombok.RequiredArgsConstructor;
 import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
-import org.scoula.backend.domain.FamilyMember.dto.LoginRequest;
-import org.scoula.backend.domain.FamilyMember.dto.LoginResponse;
+import org.scoula.backend.domain.Auth.dto.LoginRequest;
+import org.scoula.backend.domain.Auth.dto.LoginResponse;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.global.security.JwtTokenProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
