@@ -5,6 +5,8 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.nimbusds.openid.connect.sdk.claims.Gender;
+
 @Entity
 @Table(name = "family_member")
 @Getter
@@ -27,10 +29,6 @@ public class FamilyMember {
 	@Column(nullable = false)
 	private String nickname;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private Gender gender;
-
 	@Column(nullable = false)
 	private LocalDate birth;
 
@@ -46,9 +44,6 @@ public class FamilyMember {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt = LocalDateTime.now();
 
-	public enum Gender {
-		M, F
-	}
 	@Column(nullable = false)
 	private String password; // 🔹 비밀번호 (회원가입 시 해시 처리)
 
