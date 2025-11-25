@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 @RestController
-@RequestMapping("/questions")
+@RequestMapping("/question")
 @RequiredArgsConstructor
 @Tag(name = "Question", description = "질문 API")
 public class QuestionController {

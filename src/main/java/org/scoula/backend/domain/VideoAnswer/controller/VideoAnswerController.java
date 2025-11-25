@@ -1,5 +1,7 @@
 package org.scoula.backend.domain.VideoAnswer.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswer;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerRequest;
@@ -12,14 +14,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/video-answers")
+@RequestMapping("/video-answer")
 @RequiredArgsConstructor
+@Tag(name = "VideoAnswer", description = "영상 답변 API")
 public class VideoAnswerController {
 
 	private final VideoAnswerService videoAnswerService;
 
 	// ✅ 영상 업로드
 	@PostMapping
+	@Operation(
+		summary = "영상 답변 업로드",
+		description = "사용자가 영상 답변 내용을 업로드합니다."
+	)
 	public VideoAnswer createVideo(@RequestBody VideoAnswerRequest request,
 		@AuthenticationPrincipal User user) {
 		String email = user.getUsername(); // ✅ JWT에서 이메일 추출
@@ -28,6 +35,10 @@ public class VideoAnswerController {
 
 	// ✅ 주차별 영상 답변 조회
 	@GetMapping
+	@Operation(
+		summary = "주차별 영상 답변 조회",
+		description = "questionId에 해당하는 영상 답변 목록을 반환합니다."
+	)
 	public List<VideoAnswer> getAnswers(@RequestParam Long questionId,
 		@AuthenticationPrincipal User user) {
 		String email = user.getUsername();
@@ -37,6 +48,10 @@ public class VideoAnswerController {
 
 	// ✅ 수정
 	@PutMapping("/{id}")
+	@Operation(
+		summary = "영상 답변 수정",
+		description = "특정 영상 답변(ID)을 수정합니다. 수정 권한은 본인 영상 답변일 경우에만 허용됩니다."
+	)
 	public VideoAnswer updateVideo(@PathVariable Long id,
 		@RequestBody VideoAnswerRequest request,
 		@AuthenticationPrincipal User user) {
@@ -46,6 +61,10 @@ public class VideoAnswerController {
 
 	// ✅ 삭제
 	@DeleteMapping("/{id}")
+	@Operation(
+		summary = "영상 답변 삭제",
+		description = "특정 영상 답변(ID)을 삭제합니다. 본인 영상 답변만 삭제할 수 있습니다."
+	)
 	public ResponseEntity<String> deleteVideo(@PathVariable Long id,
 		@AuthenticationPrincipal User user) {
 		String email = user.getUsername();
