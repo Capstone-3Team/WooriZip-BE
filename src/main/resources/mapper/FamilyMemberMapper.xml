@@ -5,8 +5,8 @@
 <mapper namespace="org.scoula.backend.domain.FamilyMember.mapper.FamilyMemberMapper">
 
     <insert id="insertMember" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO family_member (family_id, email, nickname, gender, birth, phone, profile_image, is_leader, created_at)
-        VALUES (#{familyId}, #{email}, #{nickname}, #{gender}, #{birth}, #{phone}, #{profileImage}, #{isLeader}, NOW());
+        INSERT INTO family_member (family_id, email, nickname, birth, phone, profile_image, is_leader, created_at)
+        VALUES (#{familyId}, #{email}, #{nickname}, #{birth}, #{phone}, #{profileImage}, #{isLeader}, NOW());
     </insert>
 
     <update id="updateLeaderStatus">
