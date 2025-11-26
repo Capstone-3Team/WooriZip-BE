@@ -89,4 +89,21 @@ public class VideoAnswerService {
 
 		videoAnswerRepository.delete(answer);
 	}
+
+	public VideoAnswer getVideoById(Long id, String email) {
+		FamilyMember member = familyMemberRepository.findByEmail(email)
+			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+		VideoAnswer answer = videoAnswerRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("영상 답변을 찾을 수 없습니다."));
+
+		// 같은 가족인지 검증 (optional)
+		if (!answer.getFamilyId().equals(member.getFamilyId().longValue())) {
+			throw new SecurityException("해당 영상에 접근할 수 없습니다.");
+		}
+
+		return answer;
+	}
+
+
 }
