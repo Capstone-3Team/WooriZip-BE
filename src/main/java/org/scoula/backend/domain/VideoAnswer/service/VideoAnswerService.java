@@ -7,7 +7,6 @@ import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswer;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerRequest;
 import org.scoula.backend.domain.VideoAnswer.repository.VideoAnswerRepository;
 import org.scoula.backend.global.ai.service.AiAnalysisService;
-import org.scoula.backend.global.ai.service.ThumbnailAIService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,13 +14,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 public class VideoAnswerService {
 	private final VideoAnswerRepository videoAnswerRepository;
 	private final FamilyMemberRepository familyMemberRepository;
-	private final ThumbnailAIService thumbnailAIService;
 	private final AiAnalysisService aiAnalysisService;
 	// 업로드
 	@Transactional
@@ -30,22 +29,28 @@ public class VideoAnswerService {
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-		// 1) 업로드된 videoUrl(현재 로컬 경로)로 File 객체 생성
 		File videoFile = new File(request.getVideoUrl());
 		if (!videoFile.exists()) {
 			throw new IllegalArgumentException("비디오 파일을 찾을 수 없습니다: " + request.getVideoUrl());
 		}
 
-		// 2) AI 서버 썸네일 추출
-		Map<String, Object> thumbnail = aiAnalysisService.requestThumbnail(videoFile);
-		String thumbnailBase64 = (String) thumbnail.get("image_base64");
+		// 1) 병렬 실행
+		CompletableFuture<Map<String, Object>> thumbnailFuture =
+			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestThumbnail(videoFile));
 
-		// 3) AI 서버 STT + 요약 + 제목 추출
-		Map<String, Object> stt = aiAnalysisService.requestStt(videoFile);
+		CompletableFuture<Map<String, Object>> sttFuture =
+			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestStt(videoFile));
+
+		// 2) 둘 다 끝날 때까지 기다림 (가장 느린 하나만큼 기다림)
+		CompletableFuture.allOf(thumbnailFuture, sttFuture).join();
+
+		Map<String, Object> thumbnail = thumbnailFuture.join();
+		Map<String, Object> stt = sttFuture.join();
+
+		String thumbnailBase64 = (String) thumbnail.get("image_base64");
 		String title = (String) stt.get("title");
 		String summary = (String) stt.get("summary");
 
-		// 4) DB 저장
 		VideoAnswer answer = VideoAnswer.builder()
 			.questionId(request.getQuestionId())
 			.familyMemberId(member.getId())
@@ -59,6 +64,8 @@ public class VideoAnswerService {
 
 		return videoAnswerRepository.save(answer);
 	}
+
+
 
 
 	// 🔹 조회
