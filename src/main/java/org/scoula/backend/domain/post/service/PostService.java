@@ -27,7 +27,6 @@ public class PostService {
 			.familyMemberId(member.getId())
 			.familyId(member.getFamilyId())
 			.mediaUrl(mediaUrl)
-			.thumbnailUrl(null)
 			.description(description)
 			.build();
 		postMapper.insertPost(post);

@@ -6,8 +6,8 @@
 
     <!-- ✅ 게시글 등록 -->
     <insert id="insertPost" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO post (family_member_id, family_id, media_url, thumbnail_url, description, created_at)
-        VALUES (#{familyMemberId}, #{familyId}, #{mediaUrl}, #{thumbnailUrl}, #{description}, NOW())
+        INSERT INTO post (family_member_id, family_id, media_url, description, created_at)
+        VALUES (#{familyMemberId}, #{familyId}, #{mediaUrl}, #{description}, NOW())
     </insert>
 
     <!-- ✅ 가족별 게시글 조회 -->
@@ -37,7 +37,6 @@
         <result property="familyMemberId" column="family_member_id"/>
         <result property="familyId" column="family_id"/>
         <result property="mediaUrl" column="media_url"/>
-        <result property="thumbnailUrl" column="thumbnail_url"/>
         <result property="description" column="description"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
