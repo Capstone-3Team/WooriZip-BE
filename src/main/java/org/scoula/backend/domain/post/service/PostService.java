@@ -43,4 +43,19 @@ public class PostService {
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 		postMapper.deletePost(postId, member.getId());
 	}
+
+	// 게시글 수정 (설명만)
+	public void updatePostByEmail(Long postId, String email, String description) {
+
+		FamilyMember member = familyMemberRepository.findByEmail(email)
+			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+		// 수정 쿼리 실행
+		int updatedRows = postMapper.updatePost(postId, member.getId(), description);
+
+		if (updatedRows == 0) {
+			throw new IllegalArgumentException("수정 권한이 없거나 게시글이 존재하지 않습니다.");
+		}
+	}
+
 }

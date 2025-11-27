@@ -6,6 +6,7 @@ import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswer;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerRequest;
 import org.scoula.backend.domain.VideoAnswer.repository.VideoAnswerRepository;
+import org.scoula.backend.global.ai.service.AiAnalysisService;
 import org.scoula.backend.global.ai.service.ThumbnailAIService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.io.File;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -20,28 +22,44 @@ public class VideoAnswerService {
 	private final VideoAnswerRepository videoAnswerRepository;
 	private final FamilyMemberRepository familyMemberRepository;
 	private final ThumbnailAIService thumbnailAIService;
+	private final AiAnalysisService aiAnalysisService;
 	// 업로드
 	@Transactional
 	public VideoAnswer createVideoAnswer(VideoAnswerRequest request, String email) {
+
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
-		//  videoUrl → File 변환 (S3 도입 전 임시 방식)
+
+		// 1) 업로드된 videoUrl(현재 로컬 경로)로 File 객체 생성
 		File videoFile = new File(request.getVideoUrl());
 		if (!videoFile.exists()) {
 			throw new IllegalArgumentException("비디오 파일을 찾을 수 없습니다: " + request.getVideoUrl());
 		}
-		// AI 서버 호출 → Base64 썸네일 받기
-		String thumbnailBase64 = thumbnailAIService.getThumbnailBase64(videoFile);
+
+		// 2) AI 서버 썸네일 추출
+		Map<String, Object> thumbnail = aiAnalysisService.requestThumbnail(videoFile);
+		String thumbnailBase64 = (String) thumbnail.get("image_base64");
+
+		// 3) AI 서버 STT + 요약 + 제목 추출
+		Map<String, Object> stt = aiAnalysisService.requestStt(videoFile);
+		String title = (String) stt.get("title");
+		String summary = (String) stt.get("summary");
+
+		// 4) DB 저장
 		VideoAnswer answer = VideoAnswer.builder()
 			.questionId(request.getQuestionId())
 			.familyMemberId(member.getId())
 			.familyId(member.getFamilyId().longValue())
 			.videoUrl(request.getVideoUrl())
 			.thumbnailUrl(thumbnailBase64)
+			.title(title)
+			.summary(summary)
 			.createdAt(LocalDateTime.now())
 			.build();
+
 		return videoAnswerRepository.save(answer);
 	}
+
 
 	// 🔹 조회
 	public List<VideoAnswer> getAnswers(Long questionId, String email) {

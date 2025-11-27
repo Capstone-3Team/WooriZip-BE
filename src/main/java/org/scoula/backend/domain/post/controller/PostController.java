@@ -47,6 +47,23 @@ public class PostController {
 		List<Post> posts = postService.getAllPostsByEmail(email);
 		return ResponseEntity.ok(posts);
 	}
+	// 게시글 수정
+	@PutMapping("/{postId}")
+	@Operation(
+		summary = "일상 피드 수정",
+		description = "postId에 해당하는 게시글의 설명(description)만 수정합니다. 게시글 작성자와 JWT 사용자 이메일이 일치해야 수정이 가능합니다."
+	)
+	public ResponseEntity<String> updatePost(
+		@PathVariable Long postId,
+		@RequestParam String description,
+		@AuthenticationPrincipal User user) {
+
+		String email = user.getUsername();
+		postService.updatePostByEmail(postId, email, description);
+		return ResponseEntity.ok("게시글 수정 완료");
+	}
+
+
 	// 게시글 삭제
 	@DeleteMapping("/{postId}")
 	@Operation(
