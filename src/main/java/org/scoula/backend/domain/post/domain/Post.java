@@ -12,7 +12,6 @@ public class Post {
 	private Long familyMemberId;
 	private Integer familyId;
 	private String mediaUrl;
-	private String thumbnailUrl;
 	private String description;
 	private LocalDateTime createdAt;
 }
