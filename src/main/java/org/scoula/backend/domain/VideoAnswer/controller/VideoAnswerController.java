@@ -72,4 +72,14 @@ public class VideoAnswerController {
 		return ResponseEntity.ok("영상 답변이 성공적으로 삭제되었습니다.");
 	}
 
+
+	@GetMapping("/{id}")
+	@Operation(
+		summary = "단일 영상 답변 조회",
+		description = "특정 영상 답변 ID 상세 정보 조회"
+	)
+	public VideoAnswer getVideo(@PathVariable Long id, @AuthenticationPrincipal User user) {
+		return videoAnswerService.getVideoById(id, user.getUsername());
+	}
+
 }
