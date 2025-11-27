@@ -15,6 +15,14 @@
         SELECT * FROM post WHERE family_id = #{familyId} ORDER BY created_at DESC
     </select>
 
+    <!-- ✅ 게시글 수정 -->
+    <update id="updatePost">
+        UPDATE post
+        SET description = #{description}
+        WHERE id = #{id}
+          AND family_member_id = #{familyMemberId}
+    </update>
+
 
     <!-- ✅ 게시글 삭제 -->
     <delete id="deletePost">

@@ -11,4 +11,7 @@ public class VideoAnswerRequest {
 	private Long familyId;
 	private String videoUrl;
 	private String thumbnailUrl;
+
+	private String title;          // AI 제목
+	private String summary;        // AI 요약
 }
