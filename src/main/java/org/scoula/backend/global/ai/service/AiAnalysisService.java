@@ -3,6 +3,7 @@ package org.scoula.backend.global.ai.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,8 @@ public class AiAnalysisService {
 
 	private final WebClient webClient;
 	private static final String AI_URL = "http://localhost:8000";
-
+	@Value("${google.api-key}")
+	private String apiKey;
 	//공통적으로 사용할 multipart body 생성
 	private MultiValueMap<String, Object> createMultipart(File videoFile) {
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -47,7 +49,12 @@ public class AiAnalysisService {
 	// 🎯 STT + 요약 + 제목 요청
 	public Map<String, Object> requestStt(File videoFile) {
 
-		MultiValueMap<String, Object> body = createMultipart(videoFile);
+		// ⭐ null 대비 안전 처리
+		String key = (apiKey != null ? apiKey : "");
+
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		body.add("video", new FileSystemResource(videoFile));
+		body.add("api_key", key);   // ⭐ null이면 절대 안됨!!
 
 		return webClient.post()
 			.uri(AI_URL + "/stt")
@@ -56,6 +63,8 @@ public class AiAnalysisService {
 			.retrieve()
 			.bodyToMono(Map.class)
 			.doOnError(e -> log.error("STT AI 호출 오류", e))
-			.block();   // sync
+			.block();
 	}
+
+
 }
