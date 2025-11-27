@@ -11,9 +11,12 @@ public class WebClientConfig {
 
 	@Bean
 	public WebClient webClient(WebClient.Builder builder) {
-		// 10MB까지 응답 허용
+
+		// 최대 50MB까지 응답 허용
 		ExchangeStrategies strategies = ExchangeStrategies.builder()
-			.codecs(config -> config.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))
+			.codecs(config -> config
+				.defaultCodecs()
+				.maxInMemorySize(50 * 1024 * 1024))   // 50MB
 			.build();
 
 		return builder
