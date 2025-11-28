@@ -50,8 +50,8 @@ jobs:
             docker pull --platform linux/amd64 juwon1105/backend:latest
 
             docker run -d -p 8080:8080 --name backend \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-              -e MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" \
-              -e MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
+              -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
+              -e MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}' \
+              -e MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}'  \
               --platform linux/amd64 \
               juwon1105/backend:latest
