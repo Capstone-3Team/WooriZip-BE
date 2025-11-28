@@ -22,6 +22,9 @@ public class VideoAnswer {
 	private String videoUrl;
 	private String thumbnailUrl;
 
+	private String title;
+	private String summary;
+
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 }
