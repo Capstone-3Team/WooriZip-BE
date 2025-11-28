@@ -22,6 +22,7 @@ public class VideoAnswerService {
 	private final VideoAnswerRepository videoAnswerRepository;
 	private final FamilyMemberRepository familyMemberRepository;
 	private final AiAnalysisService aiAnalysisService;
+	private final PetShortsAsyncService petShortsAsyncService;
 	// 업로드
 	@Transactional
 	public VideoAnswer createVideoAnswer(VideoAnswerRequest request, String email) {
@@ -59,10 +60,16 @@ public class VideoAnswerService {
 			.thumbnailUrl(thumbnailBase64)
 			.title(title)
 			.summary(summary)
+			.shortsStatus("PENDING")
 			.createdAt(LocalDateTime.now())
 			.build();
 
-		return videoAnswerRepository.save(answer);
+		VideoAnswer saved = videoAnswerRepository.save(answer);
+
+		// 🔥 반려동물 숏츠 생성 비동기 실행
+		petShortsAsyncService.processPetShorts(saved);
+
+		return saved;
 	}
 
 
