@@ -25,6 +25,9 @@ public class VideoAnswer {
 	private String title;
 	private String summary;
 
+	private String shortsUrl;       // 추가됨
+	private String shortsStatus;    // PENDING, PROCESSING, DONE, FAILED
+
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 }
