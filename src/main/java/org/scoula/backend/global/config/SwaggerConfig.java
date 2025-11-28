@@ -28,7 +28,7 @@ public class SwaggerConfig {
 				.version("1.0.0")
 			)
 			// JWT 설정 추가
-			//                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+			.addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
 			.components(new Components().addSecuritySchemes(securitySchemeName,
 				new SecurityScheme()
 					.name(securitySchemeName)

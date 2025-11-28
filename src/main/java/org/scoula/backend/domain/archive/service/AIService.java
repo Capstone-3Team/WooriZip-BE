@@ -11,6 +11,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.util.Map;
 
+// 일상피드 반려동물 모아보기
+
 @Service
 @RequiredArgsConstructor
 public class AIService {
