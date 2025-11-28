@@ -27,7 +27,7 @@ public class SecurityConfig {
 					"/swagger-ui/**",
 					"/swagger-ui.html","/member/family-info","/member/check-email","/post/pet").permitAll()
 				// 질문, 영상 답변은 로그인 필요
-				.requestMatchers("/questions/**", "/api/video-answers/**","/api/posts/**").authenticated()
+				.requestMatchers("/question/**", "/video-answer/**","/post/**").authenticated()
 				.anyRequest().authenticated() // 그 외 요청은 인증 필요
 			)
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
