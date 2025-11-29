@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.scoula.backend.domain.post.domain.Post;
+import org.scoula.backend.domain.post.dto.PostResponse;
 import org.scoula.backend.domain.post.service.PostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,11 +43,13 @@ public class PostController {
 		summary = "전체 일상 피드 조회",
 		description = "로그인한 사용자의 이메일(JWT 기준)에 해당하는 전체 게시글 목록을 조회합니다."
 	)
-	public ResponseEntity<List<Post>> getAllPosts(@AuthenticationPrincipal User user) {
+
+	public ResponseEntity<List<PostResponse>> getAllPosts(@AuthenticationPrincipal User user) {
 		String email = user.getUsername();
-		List<Post> posts = postService.getAllPostsByEmail(email);
+		List<PostResponse> posts = postService.getAllPostsByEmail(email);
 		return ResponseEntity.ok(posts);
 	}
+
 	// 게시글 수정
 	@PutMapping("/{postId}")
 	@Operation(

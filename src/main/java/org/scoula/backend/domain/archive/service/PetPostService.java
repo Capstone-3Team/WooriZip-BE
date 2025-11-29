@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.post.domain.Post;
+import org.scoula.backend.domain.post.dto.PostResponse;
 import org.scoula.backend.domain.post.mapper.PostMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,12 +25,13 @@ public class PetPostService {
 	@Value("${file.upload.path}")
 	private String uploadPath;
 
-	public List<Post> getPetPosts(String email) {
+	public List<PostResponse> getPetPosts(String email) {
 
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-		List<Post> posts = postMapper.findAllPostsByFamilyId(member.getFamilyId());
+		// ✔ PostResponse 로 수정됨
+		List<PostResponse> posts = postMapper.findAllPostsByFamilyId(member.getFamilyId());
 
 		return posts.stream()
 			.filter(post -> {
