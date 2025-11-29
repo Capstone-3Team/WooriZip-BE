@@ -2,6 +2,9 @@ package org.scoula.backend.domain.mypage.service;
 
 
 import lombok.RequiredArgsConstructor;
+
+import org.scoula.backend.domain.Family.domain.Family;
+import org.scoula.backend.domain.Family.repository.FamilyRepository;
 import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.mypage.dto.ChangePasswordRequest;
@@ -17,6 +20,7 @@ public class MyPageService {
 
 	private final FamilyMemberRepository familyMemberRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
+	private final FamilyRepository familyRepository;
 
 	/** 이메일로 회원 객체 조회 (JWT 인증 기반) */
 	private FamilyMember findMemberByEmail(String email) {
@@ -78,4 +82,53 @@ public class MyPageService {
 		// 새 비밀번호 저장
 		member.setPassword(passwordEncoder.encode(request.getNewPassword()));
 	}
+
+	// // ===========================
+	// // 가족 탈퇴
+	// // ===========================
+	// public void leaveFamily(String email) {
+	//
+	// 	FamilyMember member = familyMemberRepository.findByEmail(email)
+	// 		.orElseThrow(() -> new IllegalArgumentException("계정을 찾을 수 없습니다."));
+	//
+	// 	// 가족 미가입
+	// 	if (member.getFamilyId() == null) {
+	// 		throw new IllegalArgumentException("가족에 가입되어 있지 않습니다.");
+	// 	}
+	//
+	// 	Family family = familyRepository.findById(member.getFamilyId())
+	// 		.orElseThrow(() -> new IllegalArgumentException("가족 정보를 찾을 수 없습니다."));
+	//
+	// 	// 대표면 탈퇴 불가
+	// 	if (family.getLeaderMemberId().equals(member.getId())) {
+	// 		throw new IllegalArgumentException("가족 대표는 탈퇴할 수 없습니다. 가족 해체 기능을 사용하세요.");
+	// 	}
+	//
+	// 	// 가족 탈퇴 = familyId null 처리
+	// 	member.setFamilyId(null);
+	// 	familyMemberRepository.save(member);
+	// }
+	//
+	// // ===========================
+	// // 회원 탈퇴
+	// // ===========================
+	// public void withdraw(String email) {
+	//
+	// 	FamilyMember member = familyMemberRepository.findByEmail(email)
+	// 		.orElseThrow(() -> new IllegalArgumentException("계정을 찾을 수 없습니다."));
+	//
+	// 	// 가족 대표는 탈퇴 불가
+	// 	if (member.getFamilyId() != null) {
+	// 		Family family = familyRepository.findById(member.getFamilyId())
+	// 			.orElseThrow(() -> new IllegalArgumentException("가족 정보를 찾을 수 없습니다."));
+	//
+	// 		if (family.getLeaderMemberId().equals(member.getId())) {
+	// 			throw new IllegalArgumentException("가족 대표는 회원 탈퇴가 불가능합니다. 가족 해체 기능을 사용하세요.");
+	// 		}
+	// 	}
+	//
+	// 	// 회원 삭제
+	// 	familyMemberRepository.delete(member);
+	// }
+
 }

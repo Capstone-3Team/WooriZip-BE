@@ -83,4 +83,37 @@ public class MyPageController {
 		myPageService.changePassword(email, request);
 		return ResponseEntity.ok("비밀번호 변경 성공");
 	}
+
+	// ===========================
+	// 로그아웃
+	// ===========================
+	@PostMapping("/logout")
+	@Operation(summary = "로그아웃", description = "JWT 기반 인증에서는 서버 로그아웃이 필요하지 않으며, 클라이언트가 토큰을 삭제하면 로그아웃됩니다.")
+	public ResponseEntity<?> logout() {
+		return ResponseEntity.ok("로그아웃 성공 (클라이언트에서 토큰 삭제 필요)");
+	}
+
+	// // ===========================
+	// // 가족 탈퇴
+	// // ===========================
+	// @DeleteMapping("/family")
+	// @Operation(summary = "가족 탈퇴", description = "현재 사용자를 가족 그룹에서 제거합니다. 가족 대표는 탈퇴할 수 없습니다.")
+	// public ResponseEntity<?> leaveFamily() {
+	// 	String email = getEmailFromToken();
+	// 	myPageService.leaveFamily(email);
+	// 	return ResponseEntity.ok("가족 탈퇴 성공");
+	// }
+	//
+	// // ===========================
+	// // 회원 탈퇴
+	// // ===========================
+	// @DeleteMapping("/withdraw")
+	// @Operation(summary = "회원 탈퇴", description = "현재 사용자의 계정을 삭제합니다. 가족 대표는 회원 탈퇴가 불가능합니다.")
+	// public ResponseEntity<?> withdraw() {
+	// 	String email = getEmailFromToken();
+	// 	myPageService.withdraw(email);
+	// 	return ResponseEntity.ok("회원 탈퇴 성공");
+	// }
+
+
 }
