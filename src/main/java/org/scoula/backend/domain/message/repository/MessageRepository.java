@@ -7,4 +7,5 @@ import java.util.List;
 public interface MessageRepository extends JpaRepository<Message, Long> {
 	List<Message> findByReceiverIdOrderByCreatedAtDesc(Long receiverId);
 	List<Message> findBySenderIdOrderByCreatedAtDesc(Long senderId);
+
 }

@@ -50,5 +50,13 @@ public class MessageController {
 		return ResponseEntity.ok(messageService.readMessage(id));
 	}
 
+	@GetMapping("/family-members")
+	@Operation(summary = "쪽지 보낼 가족 구성원 목록 조회")
+	public ResponseEntity<?> getFamilyMembers(@AuthenticationPrincipal User user) {
+		String email = user.getUsername();
+		return ResponseEntity.ok(messageService.getFamilyMembers(email));
+	}
+
+
 
 }
