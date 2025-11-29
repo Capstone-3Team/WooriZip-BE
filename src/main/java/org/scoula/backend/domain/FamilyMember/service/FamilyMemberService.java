@@ -22,6 +22,21 @@ public class FamilyMemberService {
 	private final FamilyMemberRepository familyMemberRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
 
+	/**
+	 * YYYYMMDD 형태의 문자열을 LocalDate로 변환하는 메서드
+	 */
+	private LocalDate parseBirth(String birth) {
+		if (birth == null || birth.length() != 8) {
+			throw new IllegalArgumentException("생년월일은 YYYYMMDD 형식의 8자리여야 합니다.");
+		}
+
+		String formatted = birth.substring(0, 4) + "-" +
+			birth.substring(4, 6) + "-" +
+			birth.substring(6, 8);
+
+		return LocalDate.parse(formatted);
+	}
+
 	@Transactional
 	public String registerMember(MemberRegisterRequest request) {
 		Family family;
@@ -40,7 +55,7 @@ public class FamilyMemberService {
 				.familyId(family.getId())
 				.email(request.getEmail())
 				.nickname(request.getNickname())
-				.birth(LocalDate.parse(request.getBirth()))
+				.birth(parseBirth(request.getBirth()))   // ✔ 변경된 부분
 				.phone(request.getPhone())
 				.profileImage(request.getProfileImage())
 				.password(passwordEncoder.encode(request.getPassword()))
@@ -65,7 +80,7 @@ public class FamilyMemberService {
 				.familyId(family.getId())
 				.email(request.getEmail())
 				.nickname(request.getNickname())
-				.birth(LocalDate.parse(request.getBirth()))
+				.birth(parseBirth(request.getBirth()))   // ✔ 변경된 부분
 				.phone(request.getPhone())
 				.profileImage(request.getProfileImage())
 				.password(passwordEncoder.encode(request.getPassword()))
