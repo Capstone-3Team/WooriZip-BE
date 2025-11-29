@@ -5,6 +5,7 @@ import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.message.domain.Message;
 import org.scoula.backend.domain.message.dto.MessageDetailResponse;
+import org.scoula.backend.domain.message.dto.MessageFamilyMemberResponse;
 import org.scoula.backend.domain.message.dto.MessageReceivedResponse;
 import org.scoula.backend.domain.message.repository.MessageRepository;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,14 @@ public class MessageService {
 
 		FamilyMember sender = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+		// ✨ receiver가 같은 가족인지 검증
+		FamilyMember receiver = familyMemberRepository.findById(receiverId)
+			.orElseThrow(() -> new IllegalArgumentException("받는 사람을 찾을 수 없습니다."));
+
+		if (!receiver.getFamilyId().equals(sender.getFamilyId())) {
+			throw new IllegalArgumentException("같은 가족 구성원에게만 쪽지를 보낼 수 있습니다.");
+		}
 
 		Message message = Message.builder()
 			.senderId(sender.getId())
@@ -83,6 +92,26 @@ public class MessageService {
 			msg.getCreatedAt()
 		);
 	}
+
+	public List<MessageFamilyMemberResponse> getFamilyMembers(String email) {
+
+		FamilyMember me = familyMemberRepository.findByEmail(email)
+			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+		List<FamilyMember> members =
+			familyMemberRepository.findByFamilyId(me.getFamilyId());
+
+		// 자기 자신은 제외하고 리스트 반환
+		return members.stream()
+			.filter(m -> !m.getId().equals(me.getId()))
+			.map(m -> new MessageFamilyMemberResponse(
+				m.getId(),
+				m.getNickname(),
+				m.getProfileImage()
+			))
+			.toList();
+	}
+
 
 
 }
