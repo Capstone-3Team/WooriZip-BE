@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.scoula.backend.domain.post.domain.Post;
 import org.scoula.backend.domain.archive.service.PetPostService;
+import org.scoula.backend.domain.post.dto.PostResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -30,7 +31,8 @@ public class PetPostController {
 	)
 	public ResponseEntity<?> getPetPosts(@AuthenticationPrincipal User user) {
 		String email = user.getUsername();
-		List<Post> petPosts = petPostService.getPetPosts(email);
+		// ✔ List<PostResponse> 타입으로 받기
+		List<PostResponse> petPosts = petPostService.getPetPosts(email);
 		return ResponseEntity.ok(petPosts);
 	}
 }
