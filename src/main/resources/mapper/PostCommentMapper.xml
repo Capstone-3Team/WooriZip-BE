@@ -11,11 +11,28 @@
     </insert>
 
     <!-- ✅ 특정 게시글의 댓글 조회 -->
-    <select id="findCommentsByPostId" resultMap="PostCommentResultMap">
-        SELECT * FROM post_comment
-        WHERE post_id = #{postId}
-        ORDER BY created_at ASC
+    <select id="findCommentsByPostId" resultMap="PostCommentResponseMap">
+        SELECT
+            c.*,
+            fm.nickname AS writer_nickname,
+            fm.profile_image AS writer_profile
+        FROM post_comment c
+                 JOIN family_member fm ON c.family_member_id = fm.id
+        WHERE c.post_id = #{postId}
+        ORDER BY c.created_at ASC
     </select>
+
+    <resultMap id="PostCommentResponseMap" type="org.scoula.backend.domain.post.dto.PostCommentResponse">
+        <id property="id" column="id"/>
+        <result property="postId" column="post_id"/>
+        <result property="familyMemberId" column="family_member_id"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="created_at"/>
+
+        <!-- 추가된 컬럼 -->
+        <result property="writerNickname" column="writer_nickname"/>
+        <result property="writerProfile" column="writer_profile"/>
+    </resultMap>
 
     <!-- ✅ 전체 댓글 조회 -->
     <select id="findAllComments" resultMap="PostCommentResultMap">

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.post.domain.Post;
+import org.scoula.backend.domain.post.dto.PostResponse;
 import org.scoula.backend.domain.post.mapper.PostMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,11 +59,13 @@ public class PostService {
 		postMapper.insertPost(post);
 	}
 
-	public List<Post> getAllPostsByEmail(String email) {
+	public List<PostResponse> getAllPostsByEmail(String email) {
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
 		return postMapper.findAllPostsByFamilyId(member.getFamilyId());
 	}
+
 
 	public void deletePostByEmail(Long postId, String email) {
 		FamilyMember member = familyMemberRepository.findByEmail(email)

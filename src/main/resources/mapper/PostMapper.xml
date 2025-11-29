@@ -11,9 +11,31 @@
     </insert>
 
     <!-- ✅ 가족별 게시글 조회 -->
-    <select id="findAllPostsByFamilyId" resultMap="PostResultMap">
-        SELECT * FROM post WHERE family_id = #{familyId} ORDER BY created_at DESC
+    <select id="findAllPostsByFamilyId" resultMap="PostResponseMap">
+        SELECT
+            p.*,
+            fm.nickname AS writer_nickname,
+            fm.profile_image AS writer_profile,
+            (SELECT COUNT(*) FROM post_comment pc WHERE pc.post_id = p.id) AS comment_count
+        FROM post p
+                 JOIN family_member fm ON p.family_member_id = fm.id
+        WHERE p.family_id = #{familyId}
+        ORDER BY p.created_at DESC
     </select>
+
+    <resultMap id="PostResponseMap" type="org.scoula.backend.domain.post.dto.PostResponse">
+        <id property="id" column="id"/>
+        <result property="familyMemberId" column="family_member_id"/>
+        <result property="familyId" column="family_id"/>
+        <result property="mediaUrl" column="media_url"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+
+        <!-- 추가된 항목 -->
+        <result property="writerNickname" column="writer_nickname"/>
+        <result property="writerProfile" column="writer_profile"/>
+        <result property="commentCount" column="comment_count"/>
+    </resultMap>
 
     <!-- ✅ 게시글 수정 -->
     <update id="updatePost">
