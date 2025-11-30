@@ -13,11 +13,19 @@ public interface PostMapper {
 
 	void insertPost(Post post);
 
-	List<PostResponse> findAllPostsByFamilyId(@Param("familyId") Integer familyId);  // ★ 수정됨
 
 	int updatePost(@Param("id") Long id,
 		@Param("familyMemberId") Long familyMemberId,
 		@Param("description") String description);
 
 	void deletePost(@Param("id") Long id, @Param("familyMemberId") Long familyMemberId);
+
+
+
+	void insertPostMedia(@Param("postId") Long postId,
+		@Param("mediaUrl") String mediaUrl);
+
+	List<PostResponse> findAllPostsByFamilyId(@Param("familyId") Integer familyId);
+	List<String> findMediaByPostId(@Param("postId") Long postId);
+
 }
