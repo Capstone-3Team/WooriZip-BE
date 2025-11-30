@@ -13,6 +13,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,9 +33,9 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/member/register","/home", "/auth/login","/auth/password/**" ,"/v3/api-docs/**",
 					"/swagger-ui/**",
-					"/swagger-ui.html","/member/family-info","/member/check-email","/post/pet","/callback","/kakao/**").permitAll()
+					"/swagger-ui.html","/member/family-info","/member/check-email","/post/pet","/callback","/kakao/**","/uploads/**").permitAll()
 				// 질문, 영상 답변은 로그인 필요
-				.requestMatchers("/question/**", "/video-answer/**","/post/**","/uploads/**").authenticated()
+				.requestMatchers("/question/**", "/video-answer/**","/post/**").authenticated()
 				.anyRequest().authenticated() // 그 외 요청은 인증 필요
 			)
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -63,4 +65,10 @@ public class SecurityConfig {
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
+
+	@Bean
+	public MultipartResolver multipartResolver() {
+		return new StandardServletMultipartResolver();
+	}
+
 }
