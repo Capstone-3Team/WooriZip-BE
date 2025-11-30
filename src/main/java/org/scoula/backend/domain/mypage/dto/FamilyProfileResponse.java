@@ -12,6 +12,7 @@ public class FamilyProfileResponse {
 	private String familyName;
 	private String inviteCode;
 
+
 	private MemberInfo leader;
 	private List<MemberInfo> members;
 

@@ -151,13 +151,24 @@ public class MyPageController {
 	@PatchMapping("/family/name")
 	@Operation(
 		summary = "가족 이름 수정",
-		description = "가족 대표만 가족 이름(별명)을 수정할 수 있습니다."
+		description = "가족 이름(별명)을 수정할 수 있습니다."
 	)
 	public ResponseEntity<?> updateFamilyName(@RequestBody FamilyNameUpdateRequest request) {
 		String email = getEmailFromToken();
 		myPageService.updateFamilyName(email, request);
 		return ResponseEntity.ok("가족 이름 수정 성공");
 	}
+
+	@GetMapping("/family/name/info")
+	@Operation(
+		summary = "가족 이름 수정 페이지 정보 조회",
+		description = "현재 가족 이름과 마지막 수정자를 조회합니다."
+	)
+	public ResponseEntity<?> getFamilyNameEditInfo() {
+		String email = getEmailFromToken();
+		return ResponseEntity.ok(myPageService.getFamilyNameEditPageInfo(email));
+	}
+
 
 
 
