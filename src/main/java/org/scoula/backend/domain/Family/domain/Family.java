@@ -26,6 +26,10 @@ public class Family {
 	@Column(name = "leader_member_id")
 	private Long leaderMemberId; // 리더 ID
 
+	@Column(name = "last_modified_by")
+	private String lastModifiedBy; // 마지막으로 가족 이름을 바꾼 사람의 별명
+
+
 	@Column(name = "created_at")
 	private LocalDateTime createdAt = LocalDateTime.now();
 }
