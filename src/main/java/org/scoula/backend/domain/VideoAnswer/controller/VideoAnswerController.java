@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,11 +29,15 @@ public class VideoAnswerController {
 		summary = "영상 답변 업로드",
 		description = "사용자가 영상 답변 내용을 업로드합니다."
 	)
-	public VideoAnswer createVideo(@RequestBody VideoAnswerRequest request,
-		@AuthenticationPrincipal User user) {
-		String email = user.getUsername(); // ✅ JWT에서 이메일 추출
-		return videoAnswerService.createVideoAnswer(request, email);
+	public VideoAnswer createVideo(
+		@RequestPart("video") MultipartFile videoFile,
+		@RequestParam("questionId") Long questionId,
+		@AuthenticationPrincipal User user
+	) {
+		String email = user.getUsername();
+		return videoAnswerService.createVideoAnswer(videoFile, questionId, email);
 	}
+
 
 	// ✅ 주차별 영상 답변 조회
 	@GetMapping

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,33 +31,40 @@ public class VideoAnswerService {
 	private final PetShortsAsyncService petShortsAsyncService;
 
 	@Transactional
-	public VideoAnswer createVideoAnswer(VideoAnswerRequest request, String email) {
+	public VideoAnswer createVideoAnswer(MultipartFile videoFile, Long questionId, String email) {
 
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-		File videoFile = new File(request.getVideoUrl());
-		if (!videoFile.exists()) {
-			throw new IllegalArgumentException("비디오 파일을 찾을 수 없습니다: " + request.getVideoUrl());
+		// 1) 서버에 파일 저장
+		String uploadDir = "/Users/juwon/Documents/4-2/Capstone/image/videouploads";  // 원하는 위치로 변경
+		String fileName = System.currentTimeMillis() + "_" + videoFile.getOriginalFilename();
+		File dest = new File(uploadDir + fileName);
+
+		try {
+			videoFile.transferTo(dest);
+		} catch (Exception e) {
+			throw new RuntimeException("비디오 업로드 실패", e);
 		}
 
-		// 1) 병렬 AI 요청
+		// 2) 병렬 AI 호출
 		CompletableFuture<Map<String, Object>> thumbnailFuture =
-			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestThumbnail(videoFile));
+			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestThumbnail(dest));
 
 		CompletableFuture<Map<String, Object>> sttFuture =
-			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestStt(videoFile));
+			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestStt(dest));
 
 		CompletableFuture.allOf(thumbnailFuture, sttFuture).join();
 
 		Map<String, Object> thumbnail = thumbnailFuture.join();
 		Map<String, Object> stt = sttFuture.join();
 
+		// 3) DB 저장
 		VideoAnswer answer = VideoAnswer.builder()
-			.questionId(request.getQuestionId())
+			.questionId(questionId)
 			.familyMemberId(member.getId())
 			.familyId(member.getFamilyId().longValue())
-			.videoUrl(request.getVideoUrl())
+			.videoUrl(dest.getAbsolutePath())     // 서버 저장 경로
 			.thumbnailUrl((String) thumbnail.get("image_base64"))
 			.title((String) stt.get("title"))
 			.summary((String) stt.get("summary"))
@@ -66,7 +74,7 @@ public class VideoAnswerService {
 
 		VideoAnswer saved = videoAnswerRepository.save(answer);
 
-		// 🔥 트랜잭션 commit 이후에 비동기 실행
+		// 4) 영상 쇼츠 변환 async 처리
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
@@ -76,6 +84,7 @@ public class VideoAnswerService {
 
 		return saved;
 	}
+
 
 
 	public List<VideoAnswerResponse> getAnswers(Long questionId, String email) {
