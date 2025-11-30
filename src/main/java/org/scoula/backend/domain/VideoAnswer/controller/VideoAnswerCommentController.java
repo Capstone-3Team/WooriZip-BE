@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswerComment;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerCommentRequest;
+import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerCommentResponse;
 import org.scoula.backend.domain.VideoAnswer.service.VideoAnswerCommentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +40,7 @@ public class VideoAnswerCommentController {
 		summary = "영상 답변 댓글 조회",
 		description = "특정 영상 답변(videoAnswerId)에 달린 모든 댓글을 조회합니다."
 	)
-	public List<VideoAnswerComment> getComments(@RequestParam Long videoAnswerId) {
+	public List<VideoAnswerCommentResponse> getComments(@RequestParam Long videoAnswerId) {
 		return commentService.getComments(videoAnswerId);
 	}
 
