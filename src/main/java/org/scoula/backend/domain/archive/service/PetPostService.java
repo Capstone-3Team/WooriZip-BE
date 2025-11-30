@@ -13,18 +13,18 @@ import org.scoula.backend.domain.post.mapper.PostMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class PetPostService {
 
 	private final FamilyMemberRepository familyMemberRepository;
 	private final VideoAnswerRepository videoAnswerRepository;
-	private final PostMapper postMapper;
+	private final PostMapper postMapper;    // ✔️ 이거 하나면 충분!
 	private final AIService aiService;
 
 	@Value("${file.upload.path}")
@@ -37,28 +37,37 @@ public class PetPostService {
 
 		Integer familyId = member.getFamilyId();
 
-		// 🔹 1) Post 중 반려동물 포함된 것
+		// 1) 가족 게시글 조회
 		List<PostResponse> posts = postMapper.findAllPostsByFamilyId(familyId);
 
-		List<PetGalleryItemResponse> postItems = posts.stream()
-			.filter(post -> {
-				if (post.getMediaUrl() == null) return false;
-				String fullPath = Paths.get(uploadPath, post.getMediaUrl()).toString();
-				return aiService.hasPet(fullPath);
-			})
-			.map(post -> PetGalleryItemResponse.builder()
-				.type("POST")
-				.id(post.getId())
-				.mediaUrl(post.getMediaUrl())
-				.description(post.getDescription())
-				.writerNickname(post.getWriterNickname())
-				.writerProfile(post.getWriterProfile())
-				.createdAt(post.getCreatedAt().toString())
-				.build()
-			)
-			.collect(Collectors.toList());
+		List<PetGalleryItemResponse> postItems = new ArrayList<>();
 
-		// 🔹 2) 반려동물 숏츠(DONE 상태만)
+		for (PostResponse post : posts) {
+
+			// ✔️ 이 게시글의 모든 media 조회 (이미 PostMapper에 있음)
+			List<String> mediaUrls = postMapper.findMediaByPostId(post.getId());
+
+			for (String mediaUrl : mediaUrls) {
+				String fullPath = Paths.get(uploadPath, mediaUrl).toString();
+
+				// 강아지가 나온 사진만 모아보기 추가
+				if (aiService.hasPet(fullPath)) {
+					postItems.add(
+						PetGalleryItemResponse.builder()
+							.type("POST")
+							.id(post.getId())
+							.mediaUrl(mediaUrl)
+							.description(post.getDescription())
+							.writerNickname(post.getWriterNickname())
+							.writerProfile(post.getWriterProfile())
+							.createdAt(post.getCreatedAt().toString())
+							.build()
+					);
+				}
+			}
+		}
+
+		// 2) 숏츠 처리 (그대로)
 		List<VideoAnswer> shorts = videoAnswerRepository
 			.findByFamilyIdAndShortsStatus(familyId.longValue(), "DONE");
 
@@ -74,17 +83,15 @@ public class PetPostService {
 				.createdAt(s.getCreatedAt().toString())
 				.build()
 			)
-			.collect(Collectors.toList());
+			.toList();
 
-		// 🔹 3) 합치기
+		// 3) 합치기 + 최신순 정렬
 		List<PetGalleryItemResponse> result = new ArrayList<>();
 		result.addAll(postItems);
 		result.addAll(shortsItems);
 
-		// 🔹 4) 최신순 정렬
 		result.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
 
 		return result;
 	}
-
 }
