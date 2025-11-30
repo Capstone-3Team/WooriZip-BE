@@ -10,6 +10,7 @@ import org.scoula.backend.domain.Family.repository.FamilyRepository;
 import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.mypage.dto.ChangePasswordRequest;
+import org.scoula.backend.domain.mypage.dto.FamilyNameEditPageResponse;
 import org.scoula.backend.domain.mypage.dto.FamilyNameUpdateRequest;
 import org.scoula.backend.domain.mypage.dto.FamilyProfileResponse;
 import org.scoula.backend.domain.mypage.dto.MyPageMainResponse;
@@ -216,16 +217,33 @@ public class MyPageService {
 		Family family = familyRepository.findById(member.getFamilyId())
 			.orElseThrow(() -> new IllegalArgumentException("가족 정보를 찾을 수 없습니다."));
 
-		// 대표만 수정 가능
-		if (!family.getLeaderMemberId().equals(member.getId())) {
-			throw new IllegalArgumentException("가족 대표만 가족 이름을 수정할 수 있습니다.");
-		}
+		// ⭐ 누구나 수정 가능 → 대표 제한 제거
 
-		// 이름 변경
+		// 가족명 변경
 		family.setName(request.getFamilyName());
+
+		// ⭐ 마지막 수정자 기록
+		family.setLastModifiedBy(member.getNickname());
 	}
 
 
+
+	public FamilyNameEditPageResponse getFamilyNameEditPageInfo(String email) {
+
+		FamilyMember me = findMemberByEmail(email);
+
+		if (me.getFamilyId() == null) {
+			throw new IllegalArgumentException("가족에 가입되어 있지 않습니다.");
+		}
+
+		Family family = familyRepository.findById(me.getFamilyId())
+			.orElseThrow(() -> new IllegalArgumentException("가족 정보를 찾을 수 없습니다."));
+
+		return new FamilyNameEditPageResponse(
+			family.getName(),
+			family.getLastModifiedBy()  // ⭐ 마지막 수정자
+		);
+	}
 
 
 
