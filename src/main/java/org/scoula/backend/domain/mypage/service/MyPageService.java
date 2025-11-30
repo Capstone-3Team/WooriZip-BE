@@ -1,6 +1,8 @@
 package org.scoula.backend.domain.mypage.service;
 
 
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 
 import org.scoula.backend.domain.Family.domain.Family;
@@ -8,6 +10,9 @@ import org.scoula.backend.domain.Family.repository.FamilyRepository;
 import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.mypage.dto.ChangePasswordRequest;
+import org.scoula.backend.domain.mypage.dto.FamilyNameUpdateRequest;
+import org.scoula.backend.domain.mypage.dto.FamilyProfileResponse;
+import org.scoula.backend.domain.mypage.dto.MyPageMainResponse;
 import org.scoula.backend.domain.mypage.dto.MyPageProfileResponse;
 import org.scoula.backend.domain.mypage.dto.UpdateFieldRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -67,6 +72,14 @@ public class MyPageService {
 		FamilyMember member = findMemberByEmail(email);
 		member.setPhone(request.getValue());
 	}
+
+	/** 프로필 이미지 변경 */
+	@Transactional
+	public void updateProfileImage(String email, String profileImage) {
+		FamilyMember member = findMemberByEmail(email);
+		member.setProfileImage(profileImage);
+	}
+
 
 	/** 비밀번호 변경 (로그인 후) */
 	@Transactional
@@ -130,5 +143,91 @@ public class MyPageService {
 	// 	// 회원 삭제
 	// 	familyMemberRepository.delete(member);
 	// }
+
+	public MyPageMainResponse getMainPage(String email) {
+
+		FamilyMember member = findMemberByEmail(email);
+
+		String familyName = null;
+		if (member.getFamilyId() != null) {
+			Family family = familyRepository.findById(member.getFamilyId())
+				.orElse(null);
+			if (family != null) {
+				familyName = family.getName();
+			}
+		}
+
+		return new MyPageMainResponse(
+			member.getProfileImage(),
+			member.getNickname(),
+			familyName
+		);
+	}
+
+	public FamilyProfileResponse getFamilyProfile(String email) {
+
+		FamilyMember member = findMemberByEmail(email);
+
+		// 가족 미가입 처리
+		if (member.getFamilyId() == null) {
+			throw new IllegalArgumentException("가족에 가입되어 있지 않습니다.");
+		}
+
+		Family family = familyRepository.findById(member.getFamilyId())
+			.orElseThrow(() -> new IllegalArgumentException("가족 정보를 찾을 수 없습니다."));
+
+		// 가족 대표 찾기
+		FamilyMember leader = familyMemberRepository.findById(family.getLeaderMemberId())
+			.orElseThrow(() -> new IllegalArgumentException("가족 대표 정보를 찾을 수 없습니다."));
+
+		// 가족 구성원 찾기
+		List<FamilyProfileResponse.MemberInfo> members = familyMemberRepository.findByFamilyId(family.getId())
+			.stream()
+			.filter(m -> !m.getId().equals(leader.getId())) // 대표 제외
+			.map(m -> new FamilyProfileResponse.MemberInfo(
+				m.getNickname(),
+				m.getProfileImage()
+			))
+			.toList();
+
+		// Response 생성
+		return new FamilyProfileResponse(
+			family.getName(),
+			family.getInviteCode(),
+			new FamilyProfileResponse.MemberInfo(
+				leader.getNickname(),
+				leader.getProfileImage()
+			),
+			members
+		);
+	}
+
+	/** 가족 이름 수정 (가족 대표만 가능) */
+	@Transactional
+	public void updateFamilyName(String email, FamilyNameUpdateRequest request) {
+
+		FamilyMember member = findMemberByEmail(email);
+
+		// 가족 미가입 확인
+		if (member.getFamilyId() == null) {
+			throw new IllegalArgumentException("가족에 가입되어 있지 않습니다.");
+		}
+
+		Family family = familyRepository.findById(member.getFamilyId())
+			.orElseThrow(() -> new IllegalArgumentException("가족 정보를 찾을 수 없습니다."));
+
+		// 대표만 수정 가능
+		if (!family.getLeaderMemberId().equals(member.getId())) {
+			throw new IllegalArgumentException("가족 대표만 가족 이름을 수정할 수 있습니다.");
+		}
+
+		// 이름 변경
+		family.setName(request.getFamilyName());
+	}
+
+
+
+
+
 
 }

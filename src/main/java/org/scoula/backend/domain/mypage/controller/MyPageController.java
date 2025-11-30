@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.scoula.backend.domain.mypage.dto.ChangePasswordRequest;
+import org.scoula.backend.domain.mypage.dto.FamilyNameUpdateRequest;
 import org.scoula.backend.domain.mypage.dto.UpdateFieldRequest;
 import org.scoula.backend.domain.mypage.service.MyPageService;
 import org.springframework.http.ResponseEntity;
@@ -72,6 +73,18 @@ public class MyPageController {
 		return ResponseEntity.ok("휴대폰 번호 수정 성공");
 	}
 
+	@PatchMapping("/profile-image")
+	@Operation(
+		summary = "프로필 이미지 변경",
+		description = "현재 사용자의 프로필 이미지를 변경합니다."
+	)
+	public ResponseEntity<?> updateProfileImage(@RequestParam("image") String profileImage) {
+		String email = getEmailFromToken();
+		myPageService.updateProfileImage(email, profileImage);
+		return ResponseEntity.ok("프로필 이미지 변경 성공");
+	}
+
+
 	/** 비밀번호 변경 */
 	@PatchMapping("/password")
 	@Operation(
@@ -114,6 +127,38 @@ public class MyPageController {
 	// 	myPageService.withdraw(email);
 	// 	return ResponseEntity.ok("회원 탈퇴 성공");
 	// }
+
+	@GetMapping("/main")
+	@Operation(
+		summary = "마이페이지 메인 조회",
+		description = "사용자의 별명, 프로필 이미지, 가족명을 조회합니다."
+	)
+	public ResponseEntity<?> getMainPage() {
+		String email = getEmailFromToken();
+		return ResponseEntity.ok(myPageService.getMainPage(email));
+	}
+
+	@GetMapping("/family-profile")
+	@Operation(
+		summary = "가족 프로필 조회",
+		description = "가족 초대코드, 가족 대표, 구성원 목록을 조회합니다."
+	)
+	public ResponseEntity<?> getFamilyProfile() {
+		String email = getEmailFromToken();
+		return ResponseEntity.ok(myPageService.getFamilyProfile(email));
+	}
+
+	@PatchMapping("/family/name")
+	@Operation(
+		summary = "가족 이름 수정",
+		description = "가족 대표만 가족 이름(별명)을 수정할 수 있습니다."
+	)
+	public ResponseEntity<?> updateFamilyName(@RequestBody FamilyNameUpdateRequest request) {
+		String email = getEmailFromToken();
+		myPageService.updateFamilyName(email, request);
+		return ResponseEntity.ok("가족 이름 수정 성공");
+	}
+
 
 
 }
