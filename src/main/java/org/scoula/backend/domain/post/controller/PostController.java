@@ -30,11 +30,12 @@ public class PostController {
 		description = "이미지 파일(MultipartFile)과 설명(description)을 포함하여 게시글을 생성합니다. "
 	)
 	public ResponseEntity<String> createPost(
-		@RequestParam(required = false) MultipartFile file,
+		@RequestParam(required = false) MultipartFile[] files,
 		@RequestParam String description,
-		@AuthenticationPrincipal User user) {
-		String email = user.getUsername(); // JWT에서 이메일 추출
-		postService.createPostByEmail(email, file, description);
+		@AuthenticationPrincipal User user
+	) {
+		String email = user.getUsername();
+		postService.createPostByEmail(email, files, description);
 		return ResponseEntity.ok("게시글 등록 완료");
 	}
 	// 전체 게시글 조회

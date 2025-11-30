@@ -19,52 +19,63 @@ public class PostService {
 	private final PostMapper postMapper;
 	private final FamilyMemberRepository familyMemberRepository;
 
-	public void createPostByEmail(String email, MultipartFile file, String description) {
+	public void createPostByEmail(String email, MultipartFile[] files, String description) {
 
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-		String mediaUrl = null;
-
-		if (file != null && !file.isEmpty()) {
-
-			String uploadDir = "/Users/juwon/Documents/4-2/Capstone/image/uploads/";
-
-			File directory = new File(uploadDir);
-			if (!directory.exists()) directory.mkdirs();
-
-			// 안전한 파일명 처리
-			String original = file.getOriginalFilename();
-			String safeName = original.replaceAll("[^a-zA-Z0-9._-]", "_");
-
-			String savePath = uploadDir + safeName;
-
-			try {
-				file.transferTo(new File(savePath));
-			} catch (Exception e) {
-				throw new RuntimeException("파일 저장 실패: " + e.getMessage());
-			}
-
-			// DB에 저장되는 경로 (앞에 / 제거)
-			mediaUrl = "uploads/" + safeName;
-		}
-
+		// 1) Post 먼저 저장
 		Post post = Post.builder()
 			.familyMemberId(member.getId())
 			.familyId(member.getFamilyId())
-			.mediaUrl(mediaUrl)
 			.description(description)
 			.build();
 
-		postMapper.insertPost(post);
+		postMapper.insertPost(post); // post.id 생성됨
+
+		// 2) 이미지 여러 장 저장
+		if (files != null) {
+			String uploadDir = "/Users/juwon/Documents/4-2/Capstone/image/uploads/";
+			File directory = new File(uploadDir);
+			if (!directory.exists()) directory.mkdirs();
+
+			for (MultipartFile file : files) {
+				if (file == null || file.isEmpty()) continue;
+
+				String original = file.getOriginalFilename();
+				String safeName = original.replaceAll("[^a-zA-Z0-9._-]", "_");
+				String savePath = uploadDir + safeName;
+
+				try {
+					file.transferTo(new File(savePath));
+				} catch (Exception e) {
+					throw new RuntimeException("파일 저장 실패: " + e.getMessage());
+				}
+
+				String mediaUrl = "uploads/" + safeName;
+
+				// 이미지 1장 저장
+				postMapper.insertPostMedia(post.getId(), mediaUrl);
+			}
+		}
 	}
 
+
 	public List<PostResponse> getAllPostsByEmail(String email) {
+
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-		return postMapper.findAllPostsByFamilyId(member.getFamilyId());
+		List<PostResponse> posts = postMapper.findAllPostsByFamilyId(member.getFamilyId());
+
+		for (PostResponse post : posts) {
+			List<String> mediaList = postMapper.findMediaByPostId(post.getId());
+			post.setMediaUrls(mediaList);
+		}
+
+		return posts;
 	}
+
 
 
 	public void deletePostByEmail(Long postId, String email) {
