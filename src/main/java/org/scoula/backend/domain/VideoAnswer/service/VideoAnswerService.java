@@ -6,6 +6,7 @@ import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswer;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerRequest;
+import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerResponse;
 import org.scoula.backend.domain.VideoAnswer.repository.VideoAnswerRepository;
 import org.scoula.backend.global.ai.service.AiAnalysisService;
 import org.springframework.stereotype.Service;
@@ -77,13 +78,37 @@ public class VideoAnswerService {
 	}
 
 
-	public List<VideoAnswer> getAnswers(Long questionId, String email) {
+	public List<VideoAnswerResponse> getAnswers(Long questionId, String email) {
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
 		Long familyId = member.getFamilyId().longValue();
-		return videoAnswerRepository.findByQuestionIdAndFamilyId(questionId, familyId);
+		List<VideoAnswer> answers = videoAnswerRepository.findByQuestionIdAndFamilyId(questionId, familyId);
+
+		return answers.stream()
+			.map(answer -> {
+				FamilyMember uploader = familyMemberRepository.findById(answer.getFamilyMemberId())
+					.orElseThrow(() -> new IllegalArgumentException("업로더 정보를 찾을 수 없습니다."));
+
+				boolean isOwner = uploader.getEmail().equals(email);
+
+				return VideoAnswerResponse.builder()
+					.id(answer.getId())
+					.questionId(answer.getQuestionId())
+					.familyMemberId(answer.getFamilyMemberId())
+					.familyId(answer.getFamilyId())
+					.videoUrl(answer.getVideoUrl())
+					.thumbnailUrl(answer.getThumbnailUrl())
+					.title(answer.getTitle())
+					.summary(answer.getSummary())
+					.nickname(uploader.getNickname())
+					.profileImageUrl(uploader.getProfileImage())
+					.isOwner(isOwner)
+					.build();
+			})
+			.toList();
 	}
+
 
 
 	@Transactional
@@ -133,17 +158,32 @@ public class VideoAnswerService {
 	}
 
 
-	public VideoAnswer getVideoById(Long id, String email) {
+	public VideoAnswerResponse getVideoById(Long id, String email) {
+
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
 		VideoAnswer answer = videoAnswerRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("영상 답변을 찾을 수 없습니다."));
 
-		if (!answer.getFamilyId().equals(member.getFamilyId().longValue())) {
-			throw new SecurityException("해당 영상에 접근할 수 없습니다.");
-		}
+		FamilyMember uploader = familyMemberRepository.findById(answer.getFamilyMemberId())
+			.orElseThrow(() -> new IllegalArgumentException("업로더 정보를 찾을 수 없습니다."));
 
-		return answer;
+		boolean isOwner = uploader.getEmail().equals(email);
+
+		return VideoAnswerResponse.builder()
+			.id(answer.getId())
+			.questionId(answer.getQuestionId())
+			.familyMemberId(answer.getFamilyMemberId())
+			.familyId(answer.getFamilyId())
+			.videoUrl(answer.getVideoUrl())
+			.thumbnailUrl(answer.getThumbnailUrl())
+			.title(answer.getTitle())
+			.summary(answer.getSummary())
+			.nickname(uploader.getNickname())
+			.profileImageUrl(uploader.getProfileImage())
+			.isOwner(isOwner)
+			.build();
 	}
+
 }
