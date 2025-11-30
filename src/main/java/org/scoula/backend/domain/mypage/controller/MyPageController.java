@@ -89,13 +89,23 @@ public class MyPageController {
 	@PatchMapping("/password")
 	@Operation(
 		summary = "비밀번호 변경",
-		description = "기존 비밀번호를 확인한 뒤 새로운 비밀번호로 변경합니다."
+		description = "기존 비밀번호 확인 후 새 비밀번호로 변경합니다."
 	)
-	public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(
+		description = "비밀번호 변경 요청",
+		required = true,
+		content = @io.swagger.v3.oas.annotations.media.Content(
+			schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = ChangePasswordRequest.class)
+		)
+	)
+	public ResponseEntity<?> changePassword(
+		@RequestBody ChangePasswordRequest request
+	) {
 		String email = getEmailFromToken();
 		myPageService.changePassword(email, request);
 		return ResponseEntity.ok("비밀번호 변경 성공");
 	}
+
 
 	// ===========================
 	// 로그아웃
