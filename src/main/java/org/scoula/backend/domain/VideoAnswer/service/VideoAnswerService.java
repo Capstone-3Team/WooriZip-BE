@@ -88,6 +88,7 @@ public class VideoAnswerService {
 
 	@Transactional
 	public VideoAnswer updateVideoAnswer(Long id, VideoAnswerRequest request, String email) {
+
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
@@ -98,10 +99,23 @@ public class VideoAnswerService {
 			throw new SecurityException("본인의 영상만 수정할 수 있습니다.");
 		}
 
-		answer.setVideoUrl(request.getVideoUrl());
-		answer.setThumbnailUrl(request.getThumbnailUrl());
+		// 🔥 필드별 부분 수정 (null 값은 무시)
+		if (request.getVideoUrl() != null) {
+			answer.setVideoUrl(request.getVideoUrl());
+		}
+		if (request.getThumbnailUrl() != null) {
+			answer.setThumbnailUrl(request.getThumbnailUrl());
+		}
+		if (request.getTitle() != null) {
+			answer.setTitle(request.getTitle());
+		}
+		if (request.getSummary() != null) {
+			answer.setSummary(request.getSummary());
+		}
+
 		return videoAnswerRepository.save(answer);
 	}
+
 
 	@Transactional
 	public void deleteVideoAnswer(Long id, String email) {
