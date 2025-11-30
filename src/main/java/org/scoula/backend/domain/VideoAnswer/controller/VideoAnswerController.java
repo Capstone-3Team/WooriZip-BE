@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswer;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerRequest;
+import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerResponse;
 import org.scoula.backend.domain.VideoAnswer.service.VideoAnswerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,10 +40,9 @@ public class VideoAnswerController {
 		summary = "주차별 영상 답변 조회",
 		description = "questionId에 해당하는 영상 답변 목록을 반환합니다."
 	)
-	public List<VideoAnswer> getAnswers(@RequestParam Long questionId,
+	public List<VideoAnswerResponse> getAnswers(@RequestParam Long questionId,
 		@AuthenticationPrincipal User user) {
-		String email = user.getUsername();
-		return videoAnswerService.getAnswers(questionId, email);
+		return videoAnswerService.getAnswers(questionId, user.getUsername());
 	}
 
 
@@ -78,7 +78,7 @@ public class VideoAnswerController {
 		summary = "단일 영상 답변 조회",
 		description = "특정 영상 답변 ID 상세 정보 조회"
 	)
-	public VideoAnswer getVideo(@PathVariable Long id, @AuthenticationPrincipal User user) {
+	public VideoAnswerResponse getVideo(@PathVariable Long id, @AuthenticationPrincipal User user) {
 		return videoAnswerService.getVideoById(id, user.getUsername());
 	}
 

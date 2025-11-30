@@ -5,6 +5,7 @@ import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswerComment;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerCommentRequest;
+import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerCommentResponse;
 import org.scoula.backend.domain.VideoAnswer.repository.VideoAnswerCommentRepository;
 import org.scoula.backend.domain.VideoAnswer.repository.VideoAnswerRepository;
 import org.springframework.stereotype.Service;
@@ -44,9 +45,30 @@ public class VideoAnswerCommentService {
 	}
 
 	// 🔹 댓글 조회
-	public List<VideoAnswerComment> getComments(Long videoAnswerId) {
-		return commentRepository.findByVideoAnswerId(videoAnswerId);
+	public List<VideoAnswerCommentResponse> getComments(Long videoAnswerId) {
+		List<VideoAnswerComment> comments = commentRepository.findByVideoAnswerId(videoAnswerId);
+
+		return comments.stream()
+			.map(comment -> {
+				FamilyMember member = familyMemberRepository.findById(comment.getFamilyMemberId())
+					.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+				boolean isOwner = member.getEmail().equals(member.getEmail());
+
+				return VideoAnswerCommentResponse.builder()
+					.id(comment.getId())
+					.videoAnswerId(comment.getVideoAnswerId())
+					.familyMemberId(comment.getFamilyMemberId())
+					.familyId(comment.getFamilyId())
+					.content(comment.getContent())
+					.nickname(member.getNickname())
+					.profileImageUrl(member.getProfileImage())
+					.isOwner(isOwner)
+					.build();
+			})
+			.toList();
 	}
+
 
 	// 🔹 댓글 수정
 	@Transactional
