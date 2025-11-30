@@ -72,6 +72,18 @@ public class MyPageController {
 		return ResponseEntity.ok("휴대폰 번호 수정 성공");
 	}
 
+	@PatchMapping("/profile-image")
+	@Operation(
+		summary = "프로필 이미지 변경",
+		description = "현재 사용자의 프로필 이미지를 변경합니다."
+	)
+	public ResponseEntity<?> updateProfileImage(@RequestParam("image") String profileImage) {
+		String email = getEmailFromToken();
+		myPageService.updateProfileImage(email, profileImage);
+		return ResponseEntity.ok("프로필 이미지 변경 성공");
+	}
+
+
 	/** 비밀번호 변경 */
 	@PatchMapping("/password")
 	@Operation(

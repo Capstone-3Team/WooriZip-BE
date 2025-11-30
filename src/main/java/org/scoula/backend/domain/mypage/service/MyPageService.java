@@ -68,6 +68,14 @@ public class MyPageService {
 		member.setPhone(request.getValue());
 	}
 
+	/** 프로필 이미지 변경 */
+	@Transactional
+	public void updateProfileImage(String email, String profileImage) {
+		FamilyMember member = findMemberByEmail(email);
+		member.setProfileImage(profileImage);
+	}
+
+
 	/** 비밀번호 변경 (로그인 후) */
 	@Transactional
 	public void changePassword(String email, ChangePasswordRequest request) {
