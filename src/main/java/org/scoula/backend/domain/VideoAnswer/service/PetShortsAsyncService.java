@@ -1,16 +1,17 @@
 package org.scoula.backend.domain.VideoAnswer.service;
 
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswer;
 import org.scoula.backend.domain.VideoAnswer.repository.VideoAnswerRepository;
 import org.scoula.backend.global.ai.client.PetShortsAiClient;
-import org.springframework.scheduling.annotation.Async;
+import org.scoula.backend.global.s3.S3Downloader;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -20,48 +21,45 @@ public class PetShortsAsyncService {
 
 	private final PetShortsAiClient petShortsAiClient;
 	private final VideoAnswerRepository videoAnswerRepository;
+	private final S3Downloader s3Downloader;
 
-	@Transactional
-	@Async
 	public void processPetShorts(Long answerId) {
-		try {
-			log.info("반려동물 숏츠 생성 시작 id={}", answerId);
 
-			// 🔥 Detached 엔티티 사용 금지 → DB에서 fresh하게 다시 가져옴
+		try {
+			log.info("🎬 숏츠 처리 시작 answerId={}", answerId);
+
 			VideoAnswer answer = videoAnswerRepository.findById(answerId)
 				.orElseThrow(() -> new RuntimeException("VideoAnswer not found: " + answerId));
 
-			// 상태 업데이트
 			answer.setShortsStatus("PROCESSING");
 			videoAnswerRepository.save(answer);
 
-			File videoFile = new File(answer.getVideoUrl());
-			if (!videoFile.exists()) {
-				throw new RuntimeException("비디오 파일 없음: " + answer.getVideoUrl());
-			}
+			// 1) videoUrl → key 추출
+			String key = extractKey(answer.getVideoUrl());
 
-			// 1) 반려동물 등장 구간 분석
+			// 2) S3 파일을 temp로 다운로드
+			File videoFile = s3Downloader.downloadAsTemp(key);
+
+			// 3) 반려동물 등장 구간 탐지
 			List<List<Double>> segments = petShortsAiClient.detectPetSegments(videoFile);
 
-			// 2) 숏츠 생성
-			String outputPath = petShortsAiClient.compilePetShorts(
+			// 4) 숏츠 생성
+			String shortsUrl = petShortsAiClient.compilePetShorts(
 				videoFile.getAbsolutePath(),
 				segments
 			);
 
-			// 3) DB 업데이트
-			answer.setShortsUrl(outputPath);
+			// 5) DB 업데이트
+			answer.setShortsUrl(shortsUrl);
 			answer.setShortsStatus("DONE");
 			videoAnswerRepository.save(answer);
 
-			log.info("반려동물 숏츠 생성 완료 id={}", answerId);
+			log.info("🎉 숏츠 생성 완료 answerId={}", answerId);
 
 		} catch (Exception e) {
-			log.error("숏츠 생성 중 오류", e);
+			log.error("💥 숏츠 생성 중 오류 발생", e);
 
-			// fresh하게 다시 조회
-			VideoAnswer answer = videoAnswerRepository.findById(answerId)
-				.orElse(null);
+			VideoAnswer answer = videoAnswerRepository.findById(answerId).orElse(null);
 
 			if (answer != null) {
 				answer.setShortsStatus("FAILED");
@@ -69,5 +67,12 @@ public class PetShortsAsyncService {
 				videoAnswerRepository.save(answer);
 			}
 		}
+	}
+
+	// URL → key 변환 (디코딩 포함)
+	private String extractKey(String videoUrl) throws Exception {
+		URL url = new URL(videoUrl);
+		String path = url.getPath().substring(1);
+		return URLDecoder.decode(path, StandardCharsets.UTF_8);
 	}
 }
