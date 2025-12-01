@@ -9,12 +9,14 @@ import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerRequest;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerResponse;
 import org.scoula.backend.domain.VideoAnswer.repository.VideoAnswerRepository;
 import org.scoula.backend.global.ai.service.AiAnalysisService;
+import org.scoula.backend.global.s3.S3Uploader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.io.File;
@@ -29,6 +31,8 @@ public class VideoAnswerService {
 	private final FamilyMemberRepository familyMemberRepository;
 	private final AiAnalysisService aiAnalysisService;
 	private final PetShortsAsyncService petShortsAsyncService;
+	private final S3Uploader s3Uploader;
+	private final AsyncShortsExecutor asyncShortsExecutor;
 
 	@Transactional
 	public VideoAnswer createVideoAnswer(MultipartFile videoFile, Long questionId, String email) {
@@ -36,49 +40,51 @@ public class VideoAnswerService {
 		FamilyMember member = familyMemberRepository.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-		// 1) 서버에 파일 저장
-		String uploadDir = "/Users/juwon/Documents/4-2/Capstone/image/videouploads";  // 원하는 위치로 변경
-		String fileName = System.currentTimeMillis() + "_" + videoFile.getOriginalFilename();
-		File dest = new File(uploadDir + fileName);
+		// 1) S3 업로드
+		String s3VideoUrl = s3Uploader.upload(videoFile, "video-answers");
 
+		// 2) AI 처리용 temp 파일 생성
+		File tempFile;
 		try {
-			videoFile.transferTo(dest);
-		} catch (Exception e) {
-			throw new RuntimeException("비디오 업로드 실패", e);
+			tempFile = File.createTempFile("video_", ".mp4");
+			videoFile.transferTo(tempFile);
+		} catch (IOException e) {
+			throw new RuntimeException("임시 파일 생성 실패", e);
 		}
 
-		// 2) 병렬 AI 호출
+
+		// 3) 병렬 AI 요청
 		CompletableFuture<Map<String, Object>> thumbnailFuture =
-			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestThumbnail(dest));
+			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestThumbnail(tempFile));
 
 		CompletableFuture<Map<String, Object>> sttFuture =
-			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestStt(dest));
+			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestStt(tempFile));
 
 		CompletableFuture.allOf(thumbnailFuture, sttFuture).join();
 
 		Map<String, Object> thumbnail = thumbnailFuture.join();
 		Map<String, Object> stt = sttFuture.join();
 
-		// 3) DB 저장
-		VideoAnswer answer = VideoAnswer.builder()
-			.questionId(questionId)
-			.familyMemberId(member.getId())
-			.familyId(member.getFamilyId().longValue())
-			.videoUrl(dest.getAbsolutePath())     // 서버 저장 경로
-			.thumbnailUrl((String) thumbnail.get("image_base64"))
-			.title((String) stt.get("title"))
-			.summary((String) stt.get("summary"))
-			.shortsStatus("PENDING")
-			.createdAt(LocalDateTime.now())
-			.build();
+		// 4) DB 저장
+		VideoAnswer saved = videoAnswerRepository.save(
+			VideoAnswer.builder()
+				.questionId(questionId)
+				.familyMemberId(member.getId())
+				.familyId(member.getFamilyId().longValue())
+				.videoUrl(s3VideoUrl)
+				.thumbnailUrl((String) thumbnail.get("image_base64"))
+				.title((String) stt.get("title"))
+				.summary((String) stt.get("summary"))
+				.shortsStatus("PENDING")
+				.createdAt(LocalDateTime.now())
+				.build()
+		);
 
-		VideoAnswer saved = videoAnswerRepository.save(answer);
-
-		// 4) 영상 쇼츠 변환 async 처리
+		// 5) Commit 이후 숏츠 비동기 실행
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
-				petShortsAsyncService.processPetShorts(saved.getId());
+				asyncShortsExecutor.run(saved.getId());
 			}
 		});
 
@@ -119,8 +125,6 @@ public class VideoAnswerService {
 			.toList();
 	}
 
-
-
 	@Transactional
 	public VideoAnswer updateVideoAnswer(Long id, VideoAnswerRequest request, String email) {
 
@@ -151,7 +155,6 @@ public class VideoAnswerService {
 		return videoAnswerRepository.save(answer);
 	}
 
-
 	@Transactional
 	public void deleteVideoAnswer(Long id, String email) {
 		FamilyMember member = familyMemberRepository.findByEmail(email)
@@ -166,7 +169,6 @@ public class VideoAnswerService {
 
 		videoAnswerRepository.delete(answer);
 	}
-
 
 	public VideoAnswerResponse getVideoById(Long id, String email) {
 
