@@ -74,4 +74,16 @@
         WHERE post_id = #{postId}
     </select>
 
+    <select id="findPostsByMemberId" resultType="org.scoula.backend.domain.post.dto.PostResponse">
+        SELECT
+            p.id,
+            p.family_id,
+            p.family_member_id,
+            p.description,
+            p.created_at
+        FROM post p
+        WHERE p.family_member_id = #{memberId}
+        ORDER BY p.created_at DESC
+    </select>
+
 </mapper>
