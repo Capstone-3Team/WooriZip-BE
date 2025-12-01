@@ -1,6 +1,8 @@
 package org.scoula.backend.domain.VideoAnswer.dto;
 
 
+import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -23,4 +25,6 @@ public class VideoAnswerResponse {
 	private String profileImageUrl;  // 업로더 프로필 사진
 
 	private boolean isOwner;         // 수정/삭제 권한 여부
+
+	private LocalDateTime createdAt;
 }
