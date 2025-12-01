@@ -64,6 +64,7 @@ public class VideoAnswerCommentService {
 					.nickname(member.getNickname())
 					.profileImageUrl(member.getProfileImage())
 					.isOwner(isOwner)
+					.createdAt(comment.getCreatedAt())
 					.build();
 			})
 			.toList();

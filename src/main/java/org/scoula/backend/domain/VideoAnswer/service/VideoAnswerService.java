@@ -113,6 +113,7 @@ public class VideoAnswerService {
 					.nickname(uploader.getNickname())
 					.profileImageUrl(uploader.getProfileImage())
 					.isOwner(isOwner)
+					.createdAt(answer.getCreatedAt())
 					.build();
 			})
 			.toList();
@@ -192,6 +193,7 @@ public class VideoAnswerService {
 			.nickname(uploader.getNickname())
 			.profileImageUrl(uploader.getProfileImage())
 			.isOwner(isOwner)
+			.createdAt(answer.getCreatedAt())
 			.build();
 	}
 
