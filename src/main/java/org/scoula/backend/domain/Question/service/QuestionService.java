@@ -8,6 +8,7 @@ import org.scoula.backend.domain.FamilyMember.domain.FamilyMember;
 import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.Question.domain.Question;
 import org.scoula.backend.domain.Question.repository.QuestionRepository;
+import org.scoula.backend.global.tts.GoogleTTSService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -75,6 +76,14 @@ public class QuestionService {
 		}
 
 		return questions;
+	}
+
+	private final GoogleTTSService googleTTSService;
+
+	public String getQuestionTTS(Long id) throws Exception {
+		Question question = questionRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("해당 질문이 없습니다."));
+		return googleTTSService.synthesize(question.getTitle());
 	}
 
 }
