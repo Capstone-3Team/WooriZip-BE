@@ -10,6 +10,7 @@ import org.scoula.backend.domain.mypage.service.MyPageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/mypage")
@@ -76,13 +77,14 @@ public class MyPageController {
 	@PatchMapping("/profile-image")
 	@Operation(
 		summary = "프로필 이미지 변경",
-		description = "현재 사용자의 프로필 이미지를 변경합니다."
+		description = "현재 사용자의 프로필 이미지를 변경합니다. (S3 업로드)"
 	)
-	public ResponseEntity<?> updateProfileImage(@RequestParam("image") String profileImage) {
+	public ResponseEntity<?> updateProfileImage(@RequestPart("image") MultipartFile imageFile) {
 		String email = getEmailFromToken();
-		myPageService.updateProfileImage(email, profileImage);
-		return ResponseEntity.ok("프로필 이미지 변경 성공");
+		String imageUrl = myPageService.updateProfileImage(email, imageFile);
+		return ResponseEntity.ok(imageUrl);
 	}
+
 
 
 	/** 비밀번호 변경 */
