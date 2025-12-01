@@ -47,6 +47,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.722'
     implementation 'commons-io:commons-io:2.15.1'
+    implementation 'com.google.cloud:google-cloud-texttospeech:2.14.0'
 
 
 }
