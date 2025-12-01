@@ -1,29 +1,30 @@
 package org.scoula.backend.domain.archive.service;
-import lombok.RequiredArgsConstructor;
+
+import java.io.File;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
-import java.util.Map;
-
-// 일상피드 반려동물 모아보기
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class AIService {
-
 	private final RestTemplate restTemplate;
 
 	@Value("${ai.server.url}")
 	private String aiServerUrl;
 
 	public boolean hasPet(String fullPath) {
-
 		try {
 			File checkFile = new File(fullPath);
 			System.out.println("🔍 AI로 보내는 파일: " + fullPath);
@@ -48,30 +49,10 @@ public class AIService {
 
 			Map<String, Object> responseMap = response.getBody();
 
-			if (responseMap == null) {
-				System.out.println("❌ AI 응답 null");
-				return false;
-			}
+			if (responseMap == null) return false;
+			if (responseMap.containsKey("error")) return false;
 
-			// Flask 오류 메시지 처리
-			if (responseMap.containsKey("error")) {
-				System.out.println("⚠️ AI 서버 오류: " + responseMap.get("error"));
-				return false;
-			}
-
-			Map<String, Object> data;
-
-			if (responseMap.containsKey("data")) {
-				data = (Map<String, Object>) responseMap.get("data");
-			} else {
-				data = responseMap;
-			}
-
-			if (data == null || data.get("is_pet_present") == null) {
-				System.out.println("⚠️ AI 응답 오류: " + responseMap);
-				return false;
-			}
-
+			Map<String, Object> data = (Map<String, Object>) responseMap.getOrDefault("data", responseMap);
 			Boolean isPet = (Boolean) data.get("is_pet_present");
 			return isPet != null && isPet;
 
