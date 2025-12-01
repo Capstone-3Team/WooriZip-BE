@@ -46,7 +46,6 @@ public class QuestionController {
 	@GetMapping("/tts/{id}")
 	@Operation(summary = "질문 읽기(TTS)", description = "질문 내용을 Google Cloud TTS로 음성 변환합니다.")
 	public Map<String, Object> getQuestionTTS(@PathVariable Long id) throws Exception {
-
 		String audioBase64 = questionService.getQuestionTTS(id);
 
 		return Map.of(

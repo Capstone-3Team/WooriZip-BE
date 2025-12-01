@@ -14,6 +14,7 @@ import java.util.Base64;
 @RequiredArgsConstructor
 public class GoogleTTSService {
 
+
 	@Value("${google.tts.key-path}")
 	private Resource keyPath;
 

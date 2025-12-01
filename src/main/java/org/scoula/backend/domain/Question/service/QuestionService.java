@@ -83,7 +83,6 @@ public class QuestionService {
 	public String getQuestionTTS(Long id) throws Exception {
 		Question question = questionRepository.findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("해당 질문이 없습니다."));
-
 		return googleTTSService.synthesize(question.getTitle());
 	}
 
