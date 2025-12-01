@@ -13,4 +13,7 @@ public class AlbumItemResponse {
 	private String url;             // S3 media URL
 	private LocalDateTime createdAt;
 	private String profileImageUrl; // 업로더 프로필 이미지
+
+	private String thumbnailUrl;    // VIDEO/SHORTS면 thumbnail
+	private String nickname;
 }
