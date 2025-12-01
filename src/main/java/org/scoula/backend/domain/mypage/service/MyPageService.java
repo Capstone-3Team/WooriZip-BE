@@ -16,9 +16,11 @@ import org.scoula.backend.domain.mypage.dto.FamilyProfileResponse;
 import org.scoula.backend.domain.mypage.dto.MyPageMainResponse;
 import org.scoula.backend.domain.mypage.dto.MyPageProfileResponse;
 import org.scoula.backend.domain.mypage.dto.UpdateFieldRequest;
+import org.scoula.backend.global.s3.S3Uploader;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class MyPageService {
 	private final FamilyMemberRepository familyMemberRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final FamilyRepository familyRepository;
+	private final S3Uploader s3Uploader;
 
 	/** 이메일로 회원 객체 조회 (JWT 인증 기반) */
 	private FamilyMember findMemberByEmail(String email) {
@@ -76,10 +79,19 @@ public class MyPageService {
 
 	/** 프로필 이미지 변경 */
 	@Transactional
-	public void updateProfileImage(String email, String profileImage) {
+	public String updateProfileImage(String email, MultipartFile imageFile) {
+
 		FamilyMember member = findMemberByEmail(email);
-		member.setProfileImage(profileImage);
+
+		// 1) S3 업로드
+		String imageUrl = s3Uploader.upload(imageFile, "profile-images");
+
+		// 2) DB 업데이트
+		member.setProfileImage(imageUrl);
+
+		return imageUrl;
 	}
+
 
 
 	/** 비밀번호 변경 (로그인 후) */
