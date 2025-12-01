@@ -1,6 +1,7 @@
 package org.scoula.backend.domain.Question.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,6 +43,18 @@ public class QuestionController {
 		String email = user.getUsername();
 		return questionService.getQuestionList(email, year, keyword);
 	}
+	@GetMapping("/tts/{id}")
+	@Operation(summary = "질문 읽기(TTS)", description = "질문 내용을 Google Cloud TTS로 음성 변환합니다.")
+	public Map<String, Object> getQuestionTTS(@PathVariable Long id) throws Exception {
+
+		String audioBase64 = questionService.getQuestionTTS(id);
+
+		return Map.of(
+			"audio", audioBase64,
+			"format", "mp3"
+		);
+	}
+
 
 
 
