@@ -13,6 +13,7 @@ import org.scoula.backend.domain.FamilyMember.repository.FamilyMemberRepository;
 import org.scoula.backend.domain.FamilyMember.service.FamilyMemberService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/member")
@@ -24,15 +25,32 @@ public class FamilyMemberController {
 	private final FamilyRepository familyRepository;
 	private final FamilyMemberRepository familyMemberRepository;
 
-	@PostMapping("/register")
-	@Operation(
-		summary = "회원가입",
-		description = "가족 구성원의 회원가입을 처리하고 가족 초대 코드를 반환합니다."
-	)
-	public ResponseEntity<?> register(@RequestBody MemberRegisterRequest request) {
-		String inviteCode = familyMemberService.registerMember(request);
-		return ResponseEntity.ok("회원가입 성공! 가족 코드: " + inviteCode);
+	@PostMapping(value = "/register", consumes = "multipart/form-data")
+	public ResponseEntity<?> register(
+		@RequestPart("email") String email,
+		@RequestPart("familyName") String familyName,
+		@RequestPart(value = "inviteCode", required = false) String inviteCode,
+		@RequestPart("nickname") String nickname,
+		@RequestPart("birth") String birth,
+		@RequestPart("phone") String phone,
+		@RequestPart("password") String password,
+		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+	) {
+
+		MemberRegisterRequest request = new MemberRegisterRequest();
+		request.setEmail(email);
+		request.setFamilyName(familyName);
+		request.setInviteCode(inviteCode);
+		request.setNickname(nickname);
+		request.setBirth(birth);
+		request.setPhone(phone);
+		request.setPassword(password);
+
+		String invite = familyMemberService.registerMember(request, profileImage);
+		return ResponseEntity.ok("회원가입 성공! 가족 코드: " + invite);
 	}
+
+
 
 	// 가족 코드로 가족 정보 조회
 	@GetMapping("/family-info")
