@@ -87,4 +87,14 @@ public class VideoAnswerController {
 		return videoAnswerService.getVideoById(id, user.getUsername());
 	}
 
+	// ✅ 전체 영상 답변 조회
+	@GetMapping("/all")
+	@Operation(
+		summary = "전체 영상 답변 조회",
+		description = "로그인한 사용자가 속한 가족의 모든 영상 답변을 반환합니다."
+	)
+	public List<VideoAnswerResponse> getAllAnswers(@AuthenticationPrincipal User user) {
+		return videoAnswerService.getAllAnswers(user.getUsername());
+	}
+
 }
