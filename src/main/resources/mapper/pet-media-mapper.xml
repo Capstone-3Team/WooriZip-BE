@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.scoula.backend.domain.archive.mapper.PetMediaMapper">
+
+    <!-- URL로 조회 -->
+    <select id="findByMediaUrl" resultType="org.scoula.backend.domain.archive.domain.PetMedia">
+        SELECT *
+        FROM pet_media
+        WHERE media_url = #{mediaUrl}
+            LIMIT 1
+    </select>
+
+    <!-- 신규 삽입 -->
+    <insert id="insertPetMedia">
+        INSERT INTO pet_media (media_url, post_id, family_member_id, is_pet)
+        VALUES (#{mediaUrl}, #{postId}, #{familyMemberId}, #{isPet})
+    </insert>
+
+    <!-- 반려동물 있는 media만 조회 -->
+    <select id="findPetMediaByFamilyMemberId" resultType="org.scoula.backend.domain.archive.domain.PetMedia">
+        SELECT *
+        FROM pet_media
+        WHERE family_member_id = #{familyMemberId}
+          AND is_pet = TRUE
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>
