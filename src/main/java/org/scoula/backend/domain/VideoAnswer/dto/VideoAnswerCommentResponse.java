@@ -1,6 +1,8 @@
 package org.scoula.backend.domain.VideoAnswer.dto;
 
 
+import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,4 +20,5 @@ public class VideoAnswerCommentResponse {
 	private String profileImageUrl;
 
 	private boolean isOwner;
+	private LocalDateTime createdAt;
 }
