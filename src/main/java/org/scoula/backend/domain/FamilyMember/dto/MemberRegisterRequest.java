@@ -1,5 +1,7 @@
 package org.scoula.backend.domain.FamilyMember.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,7 +14,7 @@ public class MemberRegisterRequest {
 	private String nickname;
 	private String birth;
 	private String phone;
-	private String profileImage; // 선택사항
+	private MultipartFile profileImage;
 	private String password;
 
 }
