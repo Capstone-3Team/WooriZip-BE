@@ -199,4 +199,38 @@ public class VideoAnswerService {
 			.build();
 	}
 
+	public List<VideoAnswerResponse> getAllAnswers(String email) {
+
+		FamilyMember member = familyMemberRepository.findByEmail(email)
+			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+		Long familyId = member.getFamilyId().longValue();
+
+		// 모든 가족 영상 조회
+		List<VideoAnswer> result = videoAnswerRepository.findByFamilyId(familyId);
+
+		return result.stream()
+			.map(answer -> {
+				FamilyMember uploader = familyMemberRepository.findById(answer.getFamilyMemberId())
+					.orElseThrow(() -> new IllegalArgumentException("업로더 정보를 찾을 수 없습니다."));
+
+				boolean isMine = uploader.getEmail().equals(email);
+
+				return VideoAnswerResponse.builder()
+					.id(answer.getId())
+					.familyId(answer.getFamilyId())
+					.familyMemberId(answer.getFamilyMemberId())
+					.nickname(uploader.getNickname())
+					.profileImageUrl(uploader.getProfileImage())
+					.videoUrl(answer.getVideoUrl())
+					.thumbnailUrl(answer.getThumbnailUrl())
+					.createdAt(answer.getCreatedAt())
+					.questionId(answer.getQuestionId())
+					.isOwner(isMine)
+					.build();
+			})
+			.toList();
+	}
+
+
 }

@@ -8,5 +8,7 @@ import java.util.List;
 public interface VideoAnswerRepository extends JpaRepository<VideoAnswer, Long> {
 	List<VideoAnswer> findByQuestionIdAndFamilyId(Long questionId, Long familyId);
 	List<VideoAnswer> findByFamilyIdAndShortsStatus(Long familyId, String shortsStatus);
+	List<VideoAnswer> findByFamilyId(Long familyId);
+
 
 }
