@@ -19,11 +19,16 @@ public class GalleryService {
 	}
 
 	public GalleryItem saveItem(String url, String type) {
-		GalleryItem item = GalleryItem.builder()
-			.fileUrl(url)
-			.fileType(type)
-			.build();
 
-		return repository.save(item);
+		// 만약 url이 파일명만 넘어온다면
+		String publicUrl = "http://localhost:8080/files/" + url;
+
+		return repository.save(
+			GalleryItem.builder()
+				.fileUrl(publicUrl)
+				.fileType(type)
+				.build()
+		);
 	}
+
 }
