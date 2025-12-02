@@ -31,7 +31,7 @@ public class SecurityConfig {
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))   // CORS 활성화
 			.csrf(csrf -> csrf.disable()) // Postman 테스트용 CSRF 비활성화
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("gallery/items","/member/register","/home", "/auth/login","/auth/password/**" ,"/v3/api-docs/**",
+				.requestMatchers("gallery/items","/member/register","/home", "/auth/login","/auth/password/**" ,"/v3/api-docs/**","/files/**",
 					"/swagger-ui/**",
 					"/swagger-ui.html","/member/family-info","/member/check-email","/post/pet","/callback","/kakao/**","/uploads/**").permitAll()
 				// 질문, 영상 답변은 로그인 필요

@@ -86,4 +86,11 @@
         ORDER BY p.created_at DESC
     </select>
 
+    <select id="findAllPostImages" resultType="string">
+        SELECT media_url
+        FROM post_media
+        WHERE media_url LIKE '%post-images/%';
+    </select>
+
+
 </mapper>

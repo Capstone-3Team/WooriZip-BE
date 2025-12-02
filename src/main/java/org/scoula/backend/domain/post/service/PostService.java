@@ -84,4 +84,8 @@ public class PostService {
 			throw new IllegalArgumentException("수정 권한이 없거나 게시글이 존재하지 않습니다.");
 		}
 	}
+
+	public List<String> getAllPostImages() {
+		return postMapper.findAllPostImages();
+	}
 }

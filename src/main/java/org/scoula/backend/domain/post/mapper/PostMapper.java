@@ -28,5 +28,6 @@ public interface PostMapper {
 	List<PostResponse> findAllPostsByFamilyId(@Param("familyId") Integer familyId);
 	List<String> findMediaByPostId(@Param("postId") Long postId);
 	List<PostResponse> findPostsByMemberId(Long memberId);
+	List<String> findAllPostImages();
 
 }

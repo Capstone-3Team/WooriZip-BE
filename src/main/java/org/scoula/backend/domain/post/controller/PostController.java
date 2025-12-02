@@ -80,4 +80,16 @@ public class PostController {
 		postService.deletePostByEmail(postId, email);
 		return ResponseEntity.ok("게시글 삭제 완료");
 	}
+
+	// S3의 post-images/ 폴더에 저장된 게시글 이미지 전체 조회
+	@GetMapping("/media/images")
+	@Operation(
+		summary = "게시글 이미지 전체 조회",
+		description = "S3의 woorizip-local-files/post-images 폴더에 저장된 모든 게시글 이미지 URL을 조회합니다."
+	)
+	public ResponseEntity<List<String>> getAllPostImages() {
+		List<String> images = postService.getAllPostImages();
+		return ResponseEntity.ok(images);
+	}
+
 }
