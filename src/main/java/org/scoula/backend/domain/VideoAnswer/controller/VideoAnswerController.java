@@ -1,12 +1,15 @@
 package org.scoula.backend.domain.VideoAnswer.controller;
 
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswer;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerRequest;
 import org.scoula.backend.domain.VideoAnswer.dto.VideoAnswerResponse;
 import org.scoula.backend.domain.VideoAnswer.service.VideoAnswerService;
+import org.scoula.backend.domain.VideoAnswer.service.PetShortsAsyncService;   // 🔥 추가
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -15,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/video-answer")
 @RequiredArgsConstructor
@@ -22,8 +26,11 @@ import java.util.List;
 public class VideoAnswerController {
 
 	private final VideoAnswerService videoAnswerService;
+	private final PetShortsAsyncService petShortsAsyncService;   // 🔥 추가 (오류 해결 핵심)
 
-	// ✅ 영상 업로드
+	// ==========================
+	// 영상 업로드
+	// ==========================
 	@PostMapping
 	@Operation(
 		summary = "영상 답변 업로드",
@@ -38,63 +45,59 @@ public class VideoAnswerController {
 		return videoAnswerService.createVideoAnswer(videoFile, questionId, email);
 	}
 
-
-	// ✅ 주차별 영상 답변 조회
+	// 주차별 영상 조회
 	@GetMapping
-	@Operation(
-		summary = "주차별 영상 답변 조회",
-		description = "questionId에 해당하는 영상 답변 목록을 반환합니다."
-	)
-	public List<VideoAnswerResponse> getAnswers(@RequestParam Long questionId,
-		@AuthenticationPrincipal User user) {
+	public List<VideoAnswerResponse> getAnswers(
+		@RequestParam Long questionId,
+		@AuthenticationPrincipal User user
+	) {
 		return videoAnswerService.getAnswers(questionId, user.getUsername());
 	}
 
-
-	// ✅ 수정
+	// 수정
 	@PutMapping("/{id}")
-	@Operation(
-		summary = "영상 답변 수정",
-		description = "특정 영상 답변(ID)을 수정합니다. 수정 권한은 본인 영상 답변일 경우에만 허용됩니다."
-	)
-	public VideoAnswer updateVideo(@PathVariable Long id,
+	public VideoAnswer updateVideo(
+		@PathVariable Long id,
 		@RequestBody VideoAnswerRequest request,
-		@AuthenticationPrincipal User user) {
-		String email = user.getUsername();
-		return videoAnswerService.updateVideoAnswer(id, request, email);
+		@AuthenticationPrincipal User user
+	) {
+		return videoAnswerService.updateVideoAnswer(id, request, user.getUsername());
 	}
 
-	// ✅ 삭제
+	// 삭제
 	@DeleteMapping("/{id}")
-	@Operation(
-		summary = "영상 답변 삭제",
-		description = "특정 영상 답변(ID)을 삭제합니다. 본인 영상 답변만 삭제할 수 있습니다."
-	)
-	public ResponseEntity<String> deleteVideo(@PathVariable Long id,
-		@AuthenticationPrincipal User user) {
-		String email = user.getUsername();
-		videoAnswerService.deleteVideoAnswer(id, email);
+	public ResponseEntity<String> deleteVideo(
+		@PathVariable Long id,
+		@AuthenticationPrincipal User user
+	) {
+		videoAnswerService.deleteVideoAnswer(id, user.getUsername());
 		return ResponseEntity.ok("영상 답변이 성공적으로 삭제되었습니다.");
 	}
 
-
 	@GetMapping("/{id}")
-	@Operation(
-		summary = "단일 영상 답변 조회",
-		description = "특정 영상 답변 ID 상세 정보 조회"
-	)
-	public VideoAnswerResponse getVideo(@PathVariable Long id, @AuthenticationPrincipal User user) {
+	public VideoAnswerResponse getVideo(
+		@PathVariable Long id,
+		@AuthenticationPrincipal User user
+	) {
 		return videoAnswerService.getVideoById(id, user.getUsername());
 	}
 
-	// ✅ 전체 영상 답변 조회
+	// 전체 영상 조회
 	@GetMapping("/all")
-	@Operation(
-		summary = "전체 영상 답변 조회",
-		description = "로그인한 사용자가 속한 가족의 모든 영상 답변을 반환합니다."
-	)
 	public List<VideoAnswerResponse> getAllAnswers(@AuthenticationPrincipal User user) {
 		return videoAnswerService.getAllAnswers(user.getUsername());
 	}
+
+	// ================================
+	// 🔥 반려동물 숏츠 생성 트리거 API
+	// ================================
+	@PostMapping("/pet/shorts")
+	public ResponseEntity<?> createShorts(
+		@RequestParam("answerId") Long answerId
+	) {
+		petShortsAsyncService.createPetShorts(answerId);
+		return ResponseEntity.ok("🚀 숏츠 생성 시작!");
+	}
+
 
 }

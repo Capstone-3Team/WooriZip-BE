@@ -32,7 +32,6 @@ public class VideoAnswerService {
 	private final AiAnalysisService aiAnalysisService;
 	private final PetShortsAsyncService petShortsAsyncService;
 	private final S3Uploader s3Uploader;
-	private final AsyncShortsExecutor asyncShortsExecutor;
 
 	@Transactional
 	public VideoAnswer createVideoAnswer(MultipartFile videoFile, Long questionId, String email) {
@@ -43,7 +42,7 @@ public class VideoAnswerService {
 		// 1) S3 업로드
 		String s3VideoUrl = s3Uploader.upload(videoFile, "video-answers");
 
-		// 2) AI 처리용 temp 파일 생성
+		// 2) temp 파일 생성 (썸네일/STT용)
 		File tempFile;
 		try {
 			tempFile = File.createTempFile("video_", ".mp4");
@@ -52,8 +51,7 @@ public class VideoAnswerService {
 			throw new RuntimeException("임시 파일 생성 실패", e);
 		}
 
-
-		// 3) 병렬 AI 요청
+		// 3) 병렬 AI 요청 (썸네일 + STT)
 		CompletableFuture<Map<String, Object>> thumbnailFuture =
 			CompletableFuture.supplyAsync(() -> aiAnalysisService.requestThumbnail(tempFile));
 
@@ -75,21 +73,14 @@ public class VideoAnswerService {
 				.thumbnailUrl((String) thumbnail.get("image_base64"))
 				.title((String) stt.get("title"))
 				.summary((String) stt.get("summary"))
-				.shortsStatus("PENDING")
+				.shortsStatus("PENDING")  // 숏츠는 비동기로 생성
 				.createdAt(LocalDateTime.now())
 				.build()
 		);
 
-		// 5) Commit 이후 숏츠 비동기 실행
-		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-			@Override
-			public void afterCommit() {
-				asyncShortsExecutor.run(saved.getId());
-			}
-		});
-
 		return saved;
 	}
+
 
 
 
