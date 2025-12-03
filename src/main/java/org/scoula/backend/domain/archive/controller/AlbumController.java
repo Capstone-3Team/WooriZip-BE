@@ -25,6 +25,7 @@ public class AlbumController {
 		return albumService.getDailyAlbum(user.getUsername());
 	}
 	// ⭐ 멤버별 추억 보관함
+
 	@GetMapping("/member/{memberId}")
 	public List<MemberAlbumItemResponse> getMemberAlbum(
 		@PathVariable Long memberId,

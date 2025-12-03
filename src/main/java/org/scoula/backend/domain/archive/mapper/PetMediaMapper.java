@@ -3,6 +3,7 @@ package org.scoula.backend.domain.archive.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.scoula.backend.domain.archive.domain.PetMedia;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -17,4 +18,5 @@ public interface PetMediaMapper {
 
 	// 반려동물 포함된 것만 조회
 	List<PetMedia> findPetMediaByFamilyMemberId(Long familyMemberId);
+	List<PetMedia> findPetMediaByFamilyId(@Param("familyId") Integer familyId);
 }

@@ -28,4 +28,15 @@
         ORDER BY created_at DESC
     </select>
 
+    <!-- 반려동물 데이터 조회 (일상피드) -->
+    <select id="findPetMediaByFamilyId" resultType="org.scoula.backend.domain.archive.domain.PetMedia">
+        SELECT pm.*
+        FROM pet_media pm
+                 JOIN family_member fm ON pm.family_member_id = fm.id
+        WHERE fm.family_id = #{familyId}
+          AND pm.is_pet = 1
+        ORDER BY pm.created_at DESC
+    </select>
+
+
 </mapper>
