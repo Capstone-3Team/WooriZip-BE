@@ -4,6 +4,8 @@ package org.scoula.backend.domain.post.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
+import org.scoula.backend.domain.archive.service.PetArchiveService;
 import org.scoula.backend.domain.post.domain.Post;
 import org.scoula.backend.domain.post.dto.PostResponse;
 import org.scoula.backend.domain.post.service.PostService;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 import com.nimbusds.jwt.JWT;
 
@@ -23,6 +26,7 @@ import com.nimbusds.jwt.JWT;
 @Tag(name = "Post", description = "일상 피드 API")
 public class PostController {
 	private final PostService postService;
+	private final PetArchiveService petArchiveService;
 	// 게시글 등록
 	@PostMapping
 	@Operation(
@@ -90,6 +94,11 @@ public class PostController {
 	public ResponseEntity<List<String>> getAllPostImages() {
 		List<String> images = postService.getAllPostImages();
 		return ResponseEntity.ok(images);
+	}
+
+	@GetMapping("/pet/archive")
+	public ResponseEntity<?> getPetArchive(@AuthenticationPrincipal User user) {
+		return ResponseEntity.ok(petArchiveService.getPetArchive(user.getUsername()));
 	}
 
 }

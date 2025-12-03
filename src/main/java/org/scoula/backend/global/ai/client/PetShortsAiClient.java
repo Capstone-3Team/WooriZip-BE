@@ -10,7 +10,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.core.io.FileSystemResource;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -18,10 +20,10 @@ import java.util.*;
 public class PetShortsAiClient {
 
 	private final RestTemplate restTemplate = new RestTemplate();
-	private final String flaskUrl = "http://localhost:8000"; // 필요시 변경
+	private final String flaskUrl = "http://localhost:8000";
 
-	// 1) 반려동물 구간 감지
-	public List<List<Double>> detectPetSegments(File videoFile) {
+	// ⭐ 이 메서드가 Map을 반환하도록 반드시 변경!
+	public Map<String, Object> detectPetSegments(File videoFile) {
 
 		String url = flaskUrl + "/detect";
 
@@ -33,12 +35,19 @@ public class PetShortsAiClient {
 
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
 
-		ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
+		ResponseEntity<Map> response =
+			restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
 
-		return (List<List<Double>>) response.getBody().get("segments");
+		Map<String, Object> result = response.getBody();
+
+		// Python에서 output_path 로 올 수 있으므로 호환 처리
+		if (result != null && result.containsKey("output_path")) {
+			result.put("output", result.get("output_path"));
+		}
+
+		return result;
 	}
 
-	// 2) 숏츠 생성 요청
 	public String compilePetShorts(String videoPath, List<List<Double>> segments) {
 
 		String url = flaskUrl + "/compile";
@@ -49,6 +58,6 @@ public class PetShortsAiClient {
 
 		ResponseEntity<Map> response = restTemplate.postForEntity(url, payload, Map.class);
 
-		return (String) response.getBody().get("output"); // output_path
+		return (String) response.getBody().get("output");
 	}
 }

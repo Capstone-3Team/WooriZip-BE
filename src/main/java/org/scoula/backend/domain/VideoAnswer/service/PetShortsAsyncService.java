@@ -1,5 +1,6 @@
 package org.scoula.backend.domain.VideoAnswer.service;
 
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.scoula.backend.domain.VideoAnswer.domain.VideoAnswer;
@@ -13,6 +14,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -40,14 +42,23 @@ public class PetShortsAsyncService {
 			// 2) S3 파일을 temp로 다운로드
 			File videoFile = s3Downloader.downloadAsTemp(key);
 
-			// 3) 반려동물 등장 구간 탐지
-			List<List<Double>> segments = petShortsAiClient.detectPetSegments(videoFile);
+			// 3) AI 서버 호출
+			Map<String, Object> result = petShortsAiClient.detectPetSegments(videoFile);
+			List<List<Double>> segments = (List<List<Double>>) result.get("segments");
 
-			// 4) 숏츠 생성
-			String shortsUrl = petShortsAiClient.compilePetShorts(
-				videoFile.getAbsolutePath(),
-				segments
-			);
+			// 4) output or output_path 대응
+			String shortsUrl = null;
+			if (result.get("output") != null)
+				shortsUrl = (String) result.get("output");
+			else if (result.get("output_path") != null)
+				shortsUrl = (String) result.get("output_path");
+
+			// 실패 처리
+			if (shortsUrl == null) {
+				answer.setShortsStatus("FAILED");
+				videoAnswerRepository.save(answer);
+				return;
+			}
 
 			// 5) DB 업데이트
 			answer.setShortsUrl(shortsUrl);
@@ -69,10 +80,25 @@ public class PetShortsAsyncService {
 		}
 	}
 
-	// URL → key 변환 (디코딩 포함)
-	private String extractKey(String videoUrl) throws Exception {
-		URL url = new URL(videoUrl);
-		String path = url.getPath().substring(1);
-		return URLDecoder.decode(path, StandardCharsets.UTF_8);
+	private String extractKey(String mediaUrl) {
+		try {
+			// 1) 일반적인 S3 URL 처리
+			String marker = ".amazonaws.com/";
+			int idx = mediaUrl.indexOf(marker);
+
+			if (idx != -1) {
+				return mediaUrl.substring(idx + marker.length());
+			}
+
+			// 2) presigned URL 또는 파라미터 포함된 경우 제거
+			mediaUrl = mediaUrl.split("\\?")[0];
+
+			// 3) 버킷 없이 key만 들어온 경우
+			return mediaUrl;
+		} catch (Exception e) {
+			log.error("extractKey 실패: {}", mediaUrl);
+			return mediaUrl;
+		}
 	}
+
 }

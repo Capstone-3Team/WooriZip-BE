@@ -24,15 +24,6 @@ public class AlbumService {
 	private final VideoAnswerRepository videoAnswerRepository;
 
 
-	// ⭐ 확장자로 미디어 타입 자동 판별
-	private String detectMediaType(String url) {
-		String lower = url.toLowerCase();
-		if (lower.endsWith(".mp4") || lower.endsWith(".mov") || lower.endsWith(".avi")) {
-			return "VIDEO";
-		}
-		return "IMAGE";
-	}
-
 	// ⭐ 일상 기록 보관함 조회
 	public List<AlbumItemResponse> getDailyAlbum(String email) {
 
@@ -68,9 +59,16 @@ public class AlbumService {
 		return result;
 	}
 
-	/* ============================================================
-       ⭐ 2) 멤버별 추억 보관함 (Member Album)
-       ============================================================ */
+
+
+	private String detectMediaType(String url) {
+		String lower = url.toLowerCase();
+		if (lower.endsWith(".mp4") || lower.endsWith(".mov") || lower.endsWith(".avi"))
+			return "VIDEO";
+		return "IMAGE";
+	}
+
+	// ⭐ 멤버별 보관함
 	public List<MemberAlbumItemResponse> getMemberAlbum(Long memberId, String email) {
 
 		FamilyMember target = familyMemberRepository.findById(memberId)
@@ -78,7 +76,9 @@ public class AlbumService {
 
 		List<MemberAlbumItemResponse> result = new ArrayList<>();
 
-		// 1) 영상답변
+		/* -------------------------------------------------------
+		 * 1) 영상답변(VideoAnswer)
+		 * ------------------------------------------------------- */
 		List<VideoAnswer> videoAnswers = videoAnswerRepository.findByFamilyMemberId(memberId);
 
 		for (VideoAnswer v : videoAnswers) {
@@ -93,7 +93,9 @@ public class AlbumService {
 			);
 		}
 
-		// 2) 일상피드
+		/* -------------------------------------------------------
+		 * 2) 일상피드 (사진/영상)
+		 * ------------------------------------------------------- */
 		List<PostResponse> posts = postMapper.findPostsByMemberId(memberId);
 
 		for (PostResponse post : posts) {
@@ -101,9 +103,10 @@ public class AlbumService {
 			List<String> mediaList = postMapper.findMediaByPostId(post.getId());
 
 			for (String url : mediaList) {
+
 				result.add(
 					MemberAlbumItemResponse.builder()
-						.type(detectMediaType(url))
+						.type(detectMediaType(url))  // IMAGE or VIDEO
 						.url(url)
 						.createdAt(post.getCreatedAt())
 						.profileImageUrl(target.getProfileImage())
@@ -112,6 +115,11 @@ public class AlbumService {
 				);
 			}
 		}
+
+		/* -------------------------------------------------------
+		 * 3) 최신순 정렬
+		 * ------------------------------------------------------- */
+		result.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
 
 		return result;
 	}
