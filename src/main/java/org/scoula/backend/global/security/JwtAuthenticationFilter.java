@@ -28,18 +28,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 
+		String path = request.getServletPath();
+
+		// ⭐ JWT 검사 제외 경로 (SecurityConfig permitAll 과 동일하게!)
+		if (
+			path.startsWith("/auth/login") ||
+				path.startsWith("/auth/password") ||
+				path.startsWith("/member/register") ||
+				path.startsWith("/member/check-email") ||
+				path.startsWith("/member/family-info") ||
+				path.startsWith("/kakao") ||
+				path.startsWith("/callback") ||
+				path.startsWith("/gallery/items") ||
+				path.startsWith("/post/pet") ||
+				path.startsWith("/home") ||
+				path.startsWith("/swagger-ui") ||
+				path.startsWith("/swagger-ui.html") ||
+				path.startsWith("/v3/api-docs") ||
+				path.startsWith("/files") ||
+				path.startsWith("/uploads")
+		) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		// ⭐ JWT 인증 체크
 		String header = request.getHeader("Authorization");
 
 		if (header != null && header.startsWith("Bearer ")) {
 			String token = header.substring(7);
 			if (jwtTokenProvider.validateToken(token)) {
 				String email = jwtTokenProvider.getEmail(token);
+
 				UsernamePasswordAuthenticationToken authentication =
 					new UsernamePasswordAuthenticationToken(
 						new User(email, "", Collections.emptyList()),
 						null,
 						Collections.emptyList()
 					);
+
 				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 			}
@@ -47,4 +74,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		filterChain.doFilter(request, response);
 	}
+
+
 }
