@@ -8,7 +8,12 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @EnableAsync
-@MapperScan("org.scoula.backend.domain")
+@MapperScan({
+	"org.scoula.backend.domain.post.mapper",
+	"org.scoula.backend.domain.archive.mapper",
+	"org.scoula.backend.domain.Family.mapper",
+	"org.scoula.backend.domain.FamilyMember.mapper"
+})
 public class BackendApplication {
 
 	public static void main(String[] args) {
