@@ -18,6 +18,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Create Google TTS key file
+        run: |
+          echo "${{ secrets.GCLOUD_TTS_JSON }}" > src/main/resources/gcloud-tts-key.json
+
+
       - name: Build Spring Boot Jar
         run: |
           chmod +x ./gradlew
