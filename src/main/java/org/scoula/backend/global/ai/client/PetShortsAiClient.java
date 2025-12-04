@@ -20,7 +20,7 @@ import java.util.Map;
 public class PetShortsAiClient {
 
 	private final RestTemplate restTemplate = new RestTemplate();
-	private final String flaskUrl = "http://localhost:8000";
+	private final String flaskUrl = "http://54.180.94.179:8000";
 
 	// ⭐ 이 메서드가 Map을 반환하도록 반드시 변경!
 	public Map<String, Object> detectPetSegments(File videoFile) {
