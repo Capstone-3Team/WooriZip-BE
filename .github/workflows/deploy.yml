@@ -47,12 +47,13 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             docker rm -f backend || true
-            docker pull --platform linux/amd64 juwon1105/backend:latest
-
+            docker pull --platform linux/amd64 docker.io/juwon1105/backend:latest
+  
             docker run -d -p 8080:8080 --name backend \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
               -e MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \
-              -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}  \
+              -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
               -e GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
               --platform linux/amd64 \
-              juwon1105/backend:latest
+              docker.io/juwon1105/backend:latest
+
