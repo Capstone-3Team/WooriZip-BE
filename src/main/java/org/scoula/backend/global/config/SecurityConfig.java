@@ -50,7 +50,7 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(List.of("http://localhost:5173")); // ⭐ 프론트 개발 서버
+		config.setAllowedOrigins(List.of("http://localhost:5173","https://woori-zip-app.vercel.app","http://54.180.94.179:8000"  )); // ⭐ 프론트 개발 서버
 		config.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
 		config.setAllowCredentials(true);
