@@ -58,6 +58,9 @@ jobs:
               -e MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" \
               -e MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
               -e GOOGLE_API_KEY="${{ secrets.GOOGLE_API_KEY }}" \
+            -e AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
+            -e AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
+            -e AWS_S3_BUCKET="${{ secrets.AWS_S3_BUCKET }}" \
               --platform linux/amd64 \
               juwon1105/backend:latest
 
