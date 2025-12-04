@@ -1,5 +1,7 @@
 package org.scoula.backend.global.config;
 
+import java.util.List;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -20,7 +22,9 @@ public class SwaggerConfig {
 		final String securitySchemeName = "bearerAuth";
 
 		return new OpenAPI()
-			.addServersItem(new Server().url("https://woorizip.site"))
+			.servers(List.of(
+				new Server().url("https://woorizip.site")  // 🔥 HTTPS 강제
+			))
 			.info(new Info()
 				.title("WooriZip API")
 				.description("""
