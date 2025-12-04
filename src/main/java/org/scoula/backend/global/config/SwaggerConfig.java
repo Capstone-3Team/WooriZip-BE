@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class SwaggerConfig {
 
@@ -19,6 +20,7 @@ public class SwaggerConfig {
 		final String securitySchemeName = "bearerAuth";
 
 		return new OpenAPI()
+			.addServersItem(new Server().url("https://woorizip.site"))
 			.info(new Info()
 				.title("WooriZip API")
 				.description("""
