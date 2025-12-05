@@ -44,4 +44,15 @@ public class S3Uploader {
 			throw new RuntimeException("S3 업로드 실패", e);
 		}
 	}
+
+	public void delete(String imageUrl) {
+		try {
+			// 파일명만 추출
+			String key = imageUrl.substring(imageUrl.indexOf("post-images"));
+			amazonS3.deleteObject(bucket, key);
+		} catch (Exception e) {
+			throw new RuntimeException("S3 파일 삭제 실패: " + imageUrl, e);
+		}
+	}
+
 }

@@ -47,11 +47,11 @@ public class PostService {
 
 
 
-	public void deletePostByEmail(Long postId, String email) {
-		FamilyMember member = familyMemberRepository.findByEmail(email)
-			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
-		postMapper.deletePost(postId, member.getId());
-	}
+	// public void deletePostByEmail(Long postId, String email) {
+	// 	FamilyMember member = familyMemberRepository.findByEmail(email)
+	// 		.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+	// 	postMapper.deletePost(postId, member.getId());
+	// }
 
 	public void updatePostByEmail(Long postId, String email, String description) {
 		FamilyMember member = familyMemberRepository.findByEmail(email)
@@ -101,4 +101,32 @@ public class PostService {
 			}
 		}
 	}
+
+	public void deletePostByEmail(Long postId, String email) {
+
+		FamilyMember member = familyMemberRepository.findByEmail(email)
+			.orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+		// 1) 삭제 전 미디어 URL 조회
+		List<String> mediaUrls = postMapper.findMediaByPostId(postId);
+
+		// 2) post_media 삭제
+		postMapper.deletePostMediaByPostId(postId);
+
+		// 3) pet_media 삭제
+		postMapper.deletePetMediaByPostId(postId);
+
+		// 4) S3 파일 삭제
+		for (String url : mediaUrls) {
+			try {
+				s3Uploader.delete(url);
+			} catch (Exception e) {
+				System.out.println("⚠️ S3 삭제 실패: " + url);
+			}
+		}
+
+		// 5) post 삭제
+		postMapper.deletePost(postId, member.getId());
+	}
+
 }

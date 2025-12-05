@@ -92,5 +92,16 @@
         WHERE media_url LIKE '%post-images/%';
     </select>
 
+    <!-- post_media 삭제 -->
+    <delete id="deletePostMediaByPostId">
+        DELETE FROM post_media WHERE post_id = #{postId};
+    </delete>
+
+    <!-- pet_media 삭제 -->
+    <delete id="deletePetMediaByPostId">
+        DELETE FROM pet_media WHERE post_id = #{postId};
+    </delete>
+
+
 
 </mapper>

@@ -30,4 +30,7 @@ public interface PostMapper {
 	List<PostResponse> findPostsByMemberId(Long memberId);
 	List<String> findAllPostImages();
 
+	void deletePostMediaByPostId(@Param("postId") Long postId);
+	void deletePetMediaByPostId(@Param("postId") Long postId);
+
 }
