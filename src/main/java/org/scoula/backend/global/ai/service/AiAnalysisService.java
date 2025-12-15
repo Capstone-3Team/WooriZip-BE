@@ -21,7 +21,7 @@ import java.util.Map;
 public class AiAnalysisService {
 
 	private final WebClient webClient;
-	private static final String AI_URL = "http://54.180.94.179:8000";
+	private static final String AI_URL = "http://15.164.48.232:8000";
 	@Value("${google.api-key}")
 	private String apiKey;
 	//공통적으로 사용할 multipart body 생성
